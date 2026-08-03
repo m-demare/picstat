@@ -39,8 +39,12 @@ impl<V: Ord + Eq + Debug + Display> Display for Histogram<V> {
             let cols_per_count = max as f64 / max_columns;
 
             for (bucket, count) in buckets {
-                let s = format!("{} - {} ", bucket.min(), bucket.max());
-                write!(f, "{s:<15}")?;
+                let s = if bucket.min() == bucket.max() {
+                    format!("{}", bucket.min())
+                } else {
+                    format!("{} - {} ", bucket.min(), bucket.max())
+                };
+                write!(f, "{s:<15} ")?;
 
                 for _ in 0..((count as f64) / cols_per_count) as isize {
                     write!(f, "#")?;
@@ -51,10 +55,8 @@ impl<V: Ord + Eq + Debug + Display> Display for Histogram<V> {
             writeln!(f, "Empty histogram")?;
         }
 
-        writeln!(f)?;
         writeln!(f, "Unkown value count: {}", self.unknown)?;
 
         Ok(())
     }
 }
-

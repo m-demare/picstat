@@ -1,4 +1,6 @@
-use exif::{In, Rational, Tag, Value};
+use exif::{In, Tag, Value};
+
+use crate::types::Rational;
 
 #[derive(Debug)]
 pub struct FileMetadata {
@@ -91,7 +93,11 @@ trait GetRational {
 impl GetRational for Value {
     fn get_rational(&self, index: usize) -> Option<Rational> {
         if let Self::Rational(r) = self {
-            r.get(index).copied()
+            if let Some(exif::Rational { num, denom }) = r.get(index) {
+                Some(Rational::new(*num, *denom))
+            } else {
+                None
+            }
         } else {
             None
         }

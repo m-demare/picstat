@@ -10,12 +10,13 @@ use cli::CliArgs;
 
 use crate::{context::Context, process::process_dir};
 
-mod cli;
-mod file_metadata;
-mod process;
-mod histogram;
-mod context;
 mod bucketers;
+mod cli;
+mod context;
+mod file_metadata;
+mod histogram;
+mod process;
+mod types;
 
 fn main() -> std::io::Result<()> {
     let args = CliArgs::parse();
@@ -27,8 +28,20 @@ fn main() -> std::io::Result<()> {
     let mut ctxt = Context::new();
     process_dir(dir, &args, &mut ctxt)?;
 
+    println!("ISO");
     println!("{}", ctxt.iso_hist);
+    println!();
+    println!("Lens");
+    println!("{}", ctxt.lens_hist);
+    println!();
+    println!("Shutter speed");
+    println!("{}", ctxt.shutter_speed_hist);
+    println!();
+    println!("Aperture");
+    println!("{}", ctxt.aperture_hist);
+    println!();
+    println!("Focal length");
+    println!("{}", ctxt.focal_length_hist);
 
     Ok(())
 }
-

@@ -1,17 +1,21 @@
 use std::collections::BTreeMap;
 
-use crate::bucketers::{Bucket, Bucketer};
+use crate::{
+    bucketers::{Bucket, Bucketer},
+    types::Rational,
+};
 
-pub struct LogBucketer<'a, T: AproxF64 + Ord + Eq + Copy> {
-    clipper: &'a dyn Fn(f64) -> T,
-}
+pub struct LogBucketer {}
 
-impl<'a, T: AproxF64 + Ord + Eq + Copy> LogBucketer<'a, T> {
-    pub fn new(clipper: &'a dyn Fn(f64) -> T) -> Self {
-        Self { clipper }
+impl LogBucketer {
+    pub const fn new() -> Self {
+        Self {}
     }
 
-    fn compute_limits(&self, hist: &BTreeMap<T, usize>, target_buckets: u8) -> (T, Vec<T>) {
+    fn compute_limits<T: AproxF64 + Ord + Eq + Copy>(
+        hist: &BTreeMap<T, usize>,
+        target_buckets: u8,
+    ) -> (T, Vec<f64>) {
         let min = *hist.first_key_value().expect("not empty").0;
         let max = *hist.last_key_value().expect("not empty").0;
 
@@ -23,7 +27,6 @@ impl<'a, T: AproxF64 + Ord + Eq + Copy> LogBucketer<'a, T> {
         let mut limits = (1..target_buckets)
             .map(|n| f64::from(n).mul_add(step, minlog))
             .map(f64::exp2)
-            .map(self.clipper)
             .rev()
             .collect::<Vec<_>>();
         limits.dedup();
@@ -31,18 +34,18 @@ impl<'a, T: AproxF64 + Ord + Eq + Copy> LogBucketer<'a, T> {
     }
 }
 
-#[expect(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-pub fn clip_iso(n: f64) -> u32 {
-    ((n / 100.0).log2().round().exp2() * 100.0) as u32
-}
+// #[expect(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+// pub fn clip_iso(n: f64) -> u32 {
+//     ((n / 100.0).log2().round().exp2() * 100.0) as u32
+// }
 
-impl<T: AproxF64 + Ord + Eq + Copy> Bucketer<T> for LogBucketer<'_, T> {
+impl<T: AproxF64 + Ord + Eq + Copy> Bucketer<T> for LogBucketer {
     fn split(&self, hist: &BTreeMap<T, usize>, target_buckets: u8) -> Vec<(Bucket<T>, usize)> {
         if hist.is_empty() {
             return vec![];
         }
 
-        let (min, mut limits) = self.compute_limits(hist, target_buckets);
+        let (min, mut limits) = Self::compute_limits(hist, target_buckets);
 
         let mut bucket_start = min;
         let mut bucket_end = min;
@@ -53,7 +56,7 @@ impl<T: AproxF64 + Ord + Eq + Copy> Bucketer<T> for LogBucketer<'_, T> {
 
         for (key, count) in hist {
             if let Some(cl) = current_limit
-                && *key > cl
+                && key.aprox() > cl
             {
                 buckets.push((
                     Bucket {
@@ -70,6 +73,14 @@ impl<T: AproxF64 + Ord + Eq + Copy> Bucketer<T> for LogBucketer<'_, T> {
             current_count += count;
         }
 
+        buckets.push((
+            Bucket {
+                min: bucket_start,
+                max: bucket_end,
+            },
+            current_count,
+        ));
+
         buckets
     }
 }
@@ -81,5 +92,11 @@ pub trait AproxF64 {
 impl AproxF64 for u32 {
     fn aprox(&self) -> f64 {
         f64::from(*self)
+    }
+}
+
+impl AproxF64 for Rational {
+    fn aprox(&self) -> f64 {
+        self.to_f64()
     }
 }

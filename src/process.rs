@@ -3,7 +3,11 @@ use crate::cli::CliArgs;
 use crate::file_metadata::FileMetadata;
 use std::path::PathBuf;
 
-pub fn process_dir(dir: std::fs::ReadDir, args: &CliArgs, ctxt: &mut Context) -> std::io::Result<()> {
+pub fn process_dir(
+    dir: std::fs::ReadDir,
+    args: &CliArgs,
+    ctxt: &mut Context,
+) -> std::io::Result<()> {
     for entry in dir {
         let path = entry?.path();
         if path.is_file() {
@@ -27,7 +31,7 @@ pub fn process_file(path: &PathBuf, args: &CliArgs, ctxt: &mut Context) -> std::
         Ok(exif) => exif,
         Err(e) => {
             if args.stop_on_error {
-                return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, e))
+                return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, e));
             }
             if args.show_warnings {
                 eprintln!("{e} - {}", path.to_string_lossy());
@@ -39,8 +43,10 @@ pub fn process_file(path: &PathBuf, args: &CliArgs, ctxt: &mut Context) -> std::
     let metadata = FileMetadata::new(&exif);
 
     ctxt.iso_hist.insert_opt(metadata.iso());
+    ctxt.lens_hist.insert_opt(metadata.lens().cloned());
+    ctxt.shutter_speed_hist.insert_opt(metadata.shutter_speed());
+    ctxt.aperture_hist.insert_opt(metadata.aperture());
+    ctxt.focal_length_hist.insert_opt(metadata.focal_length());
 
     Ok(())
 }
-
-

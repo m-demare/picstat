@@ -18,7 +18,7 @@ pub struct CliArgs {
     #[arg(short, long, default_value_t = false)]
     pub(super) stop_on_error: bool,
 
-    #[arg(short='w', long, default_value_t = true)]
+    #[arg(short = 'w', long, default_value_t = true)]
     pub(super) show_warnings: bool,
 }
 

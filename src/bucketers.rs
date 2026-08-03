@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 
+pub mod exact_match_bucketer;
 pub mod log_bucketer;
 
 #[derive(Debug)]
