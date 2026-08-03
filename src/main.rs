@@ -15,6 +15,7 @@ mod file_metadata;
 mod process;
 mod histogram;
 mod context;
+mod bucketers;
 
 fn main() -> std::io::Result<()> {
     let args = CliArgs::parse();

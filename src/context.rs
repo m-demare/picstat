@@ -1,4 +1,4 @@
-use crate::histogram::{Histogram, LogBucketer};
+use crate::{bucketers::log_bucketer::{LogBucketer, clip_iso}, histogram::Histogram};
 
 pub struct Context {
     pub(crate) lens_interner: u32, // TODO
@@ -7,7 +7,7 @@ pub struct Context {
 
 impl Context {
     pub fn new() -> Self {
-        Self { lens_interner: 0, iso_hist: Histogram::new(Box::new(LogBucketer::default())) }
+        Self { lens_interner: 0, iso_hist: Histogram::new(Box::new(LogBucketer::new(&clip_iso))) }
     }
 }
 

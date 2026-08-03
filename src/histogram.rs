@@ -1,6 +1,8 @@
 use std::fmt::Debug;
 use std::{collections::BTreeMap, fmt::Display};
 
+use crate::bucketers::Bucketer;
+
 pub struct Histogram<V: Ord + Eq + Debug + Display> {
     items: BTreeMap<V, usize>,
     unknown: usize,
@@ -37,7 +39,7 @@ impl<V: Ord + Eq + Debug + Display> Display for Histogram<V> {
             let cols_per_count = max as f64 / max_columns;
 
             for (bucket, count) in buckets {
-                let s = format!("{} - {} ", bucket.min, bucket.max);
+                let s = format!("{} - {} ", bucket.min(), bucket.max());
                 write!(f, "{s:<15}")?;
 
                 for _ in 0..((count as f64) / cols_per_count) as isize {
@@ -56,72 +58,3 @@ impl<V: Ord + Eq + Debug + Display> Display for Histogram<V> {
     }
 }
 
-#[derive(Debug)]
-pub struct Bucket<V: Ord + Eq> {
-    min: V,
-    max: V,
-}
-
-pub trait Bucketer<V: Ord + Eq> {
-    fn split(&self, hist: &BTreeMap<V, usize>, target_buckets: u8) -> Vec<(Bucket<V>, usize)>;
-}
-
-#[derive(Default)]
-pub struct LogBucketer {}
-
-impl Bucketer<u32> for LogBucketer {
-    fn split(&self, hist: &BTreeMap<u32, usize>, target_buckets: u8) -> Vec<(Bucket<u32>, usize)> {
-        if hist.is_empty() {
-            return vec![];
-        }
-
-        let min = *hist.first_key_value().expect("not empty").0;
-        let max = *hist.last_key_value().expect("not empty").0;
-
-        let minlog = f64::from(min).log2();
-        let maxlog = f64::from(max).log2();
-
-        let step = (maxlog - minlog) / f64::from(target_buckets);
-
-        let mut limits = (1..target_buckets)
-            .map(|n| f64::from(n).mul_add(step, minlog))
-            .map(f64::exp2)
-            .map(Self::clip_iso)
-            .rev()
-            .collect::<Vec<_>>();
-        limits.dedup();
-
-        let mut bucket_start = min;
-        let mut bucket_end = min;
-        let mut current_limit = limits.pop();
-        let mut current_count = 0;
-
-        let mut buckets = Vec::new();
-
-        for (key, count) in hist {
-            if let Some(cl) = current_limit && *key > cl {
-                buckets.push((
-                    Bucket {
-                        min: bucket_start,
-                        max: bucket_end,
-                    },
-                    current_count,
-                ));
-                bucket_start = *key;
-                current_count = 0;
-                current_limit = limits.pop();
-            }
-            bucket_end = *key;
-            current_count += count;
-        }
-
-        buckets
-    }
-}
-
-impl LogBucketer {
-    #[expect(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-    fn clip_iso(n: f64) -> u32 {
-        ((n / 100.0).log2().round().exp2() * 100.0) as u32
-    }
-}
