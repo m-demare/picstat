@@ -30,14 +30,15 @@ pub fn process_file(path: &PathBuf, args: &CliArgs, ctxt: &mut Context) -> std::
                 return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, e))
             }
             if args.show_warnings {
-                eprintln!("{e} - {}", path.to_str().unwrap());
+                eprintln!("{e} - {}", path.to_string_lossy());
             }
             return Ok(());
         }
     };
 
     let metadata = FileMetadata::new(&exif);
-    println!("{metadata:?}");
+
+    ctxt.iso_hist.insert_opt(metadata.iso());
 
     Ok(())
 }

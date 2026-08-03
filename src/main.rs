@@ -26,6 +26,8 @@ fn main() -> std::io::Result<()> {
     let mut ctxt = Context::new();
     process_dir(dir, &args, &mut ctxt)?;
 
+    println!("{}", ctxt.iso_hist);
+
     Ok(())
 }
 

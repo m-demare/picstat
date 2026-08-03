@@ -62,6 +62,26 @@ impl FileMetadata {
             lens,
         }
     }
+
+    pub const fn iso(&self) -> Option<u32> {
+        self.iso
+    }
+
+    pub const fn aperture(&self) -> Option<Rational> {
+        self.aperture
+    }
+
+    pub const fn shutter_speed(&self) -> Option<Rational> {
+        self.shutter_speed
+    }
+
+    pub const fn focal_length(&self) -> Option<Rational> {
+        self.focal_length
+    }
+
+    pub const fn lens(&self) -> Option<&String> {
+        self.lens.as_ref()
+    }
 }
 
 trait GetRational {
