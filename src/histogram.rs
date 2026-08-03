@@ -55,7 +55,9 @@ impl<V: Ord + Eq + Debug + Display> Display for Histogram<V> {
             writeln!(f, "Empty histogram")?;
         }
 
-        writeln!(f, "Unkown value count: {}", self.unknown)?;
+        if self.unknown > 0 {
+            writeln!(f, "Unkown value count: {}", self.unknown)?;
+        }
 
         Ok(())
     }

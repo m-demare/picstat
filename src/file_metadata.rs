@@ -1,13 +1,13 @@
 use exif::{In, Tag, Value};
 
-use crate::types::Rational;
+use crate::types::{Aperture, FocalLength, Rational, ShutterSpeed};
 
 #[derive(Debug)]
 pub struct FileMetadata {
     iso: Option<u32>,
-    aperture: Option<Rational>,
-    shutter_speed: Option<Rational>,
-    focal_length: Option<Rational>,
+    aperture: Option<Aperture>,
+    shutter_speed: Option<ShutterSpeed>,
+    focal_length: Option<FocalLength>,
     lens: Option<String>,
 }
 
@@ -35,19 +35,25 @@ impl FileMetadata {
             shutter_speed = field
                 .value
                 .get_rational(0)
-                .or_else(|| todo!("ExposureTime {:?}", field.value));
+                .map_or_else(
+                    || todo!("ExposureTime {:?}", field.value),
+                    ShutterSpeed::from,
+                )
+                .into();
         }
         if let Some(field) = exif.get_field(Tag::FNumber, In::PRIMARY) {
             aperture = field
                 .value
                 .get_rational(0)
-                .or_else(|| todo!("FNumber {:?}", field.value));
+                .map_or_else(|| todo!("FNumber {:?}", field.value), Aperture::from)
+                .into();
         }
         if let Some(field) = exif.get_field(Tag::FocalLength, In::PRIMARY) {
             focal_length = field
                 .value
                 .get_rational(0)
-                .or_else(|| todo!("FocalLength {:?}", field.value));
+                .map_or_else(|| todo!("FocalLength {:?}", field.value), FocalLength::from)
+                .into();
         }
         if let Some(field) = exif.get_field(Tag::LensModel, In::PRIMARY) {
             lens = field.value.get_string(0).map_or_else(
@@ -69,15 +75,15 @@ impl FileMetadata {
         self.iso
     }
 
-    pub const fn aperture(&self) -> Option<Rational> {
+    pub const fn aperture(&self) -> Option<Aperture> {
         self.aperture
     }
 
-    pub const fn shutter_speed(&self) -> Option<Rational> {
+    pub const fn shutter_speed(&self) -> Option<ShutterSpeed> {
         self.shutter_speed
     }
 
-    pub const fn focal_length(&self) -> Option<Rational> {
+    pub const fn focal_length(&self) -> Option<FocalLength> {
         self.focal_length
     }
 

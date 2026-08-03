@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use crate::{
     bucketers::{Bucket, Bucketer},
-    types::Rational,
+    types::{Aperture, FocalLength, Rational, ShutterSpeed},
 };
 
 pub struct LogBucketer {}
@@ -96,6 +96,24 @@ impl AproxF64 for u32 {
 }
 
 impl AproxF64 for Rational {
+    fn aprox(&self) -> f64 {
+        self.to_f64()
+    }
+}
+
+impl AproxF64 for Aperture {
+    fn aprox(&self) -> f64 {
+        self.to_f64()
+    }
+}
+
+impl AproxF64 for ShutterSpeed {
+    fn aprox(&self) -> f64 {
+        self.to_f64()
+    }
+}
+
+impl AproxF64 for FocalLength {
     fn aprox(&self) -> f64 {
         self.to_f64()
     }

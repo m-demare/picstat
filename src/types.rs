@@ -41,3 +41,70 @@ impl Rational {
         f64::from(self.num) / f64::from(self.denom)
     }
 }
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Aperture(Rational);
+
+impl Display for Aperture {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "f/{}", self.0)
+    }
+}
+
+impl From<Rational> for Aperture {
+    fn from(value: Rational) -> Self {
+        Self(value)
+    }
+}
+
+impl Aperture {
+    pub fn to_f64(self) -> f64 {
+        self.0.to_f64()
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ShutterSpeed(Rational);
+
+impl Display for ShutterSpeed {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.to_f64() > 1.0 {
+            write!(f, "{} s", self.0)
+        } else {
+            write!(f, "{}/{} s", self.0.num, self.0.denom)
+        }
+    }
+}
+
+impl From<Rational> for ShutterSpeed {
+    fn from(value: Rational) -> Self {
+        Self(value)
+    }
+}
+
+impl ShutterSpeed {
+    pub fn to_f64(self) -> f64 {
+        self.0.to_f64()
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct FocalLength(Rational);
+
+impl Display for FocalLength {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}mm", self.0)
+    }
+}
+
+impl From<Rational> for FocalLength {
+    fn from(value: Rational) -> Self {
+        Self(value)
+    }
+}
+
+impl FocalLength {
+    pub fn to_f64(self) -> f64 {
+        self.0.to_f64()
+    }
+}

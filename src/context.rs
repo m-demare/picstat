@@ -1,16 +1,16 @@
 use crate::{
     bucketers::{exact_match_bucketer::ExactMatchBucketer, log_bucketer::LogBucketer},
     histogram::Histogram,
-    types::Rational,
+    types::{Aperture, FocalLength, ShutterSpeed},
 };
 
 pub struct Context {
     pub(crate) lens_interner: u32, // TODO
     pub(crate) iso_hist: Histogram<u32>,
     pub(crate) lens_hist: Histogram<String>,
-    pub(crate) shutter_speed_hist: Histogram<Rational>,
-    pub(crate) aperture_hist: Histogram<Rational>,
-    pub(crate) focal_length_hist: Histogram<Rational>,
+    pub(crate) shutter_speed_hist: Histogram<ShutterSpeed>,
+    pub(crate) aperture_hist: Histogram<Aperture>,
+    pub(crate) focal_length_hist: Histogram<FocalLength>,
 }
 
 impl Context {
