@@ -40,7 +40,7 @@ pub fn process_file(path: &PathBuf, args: &CliArgs, ctxt: &mut Context) -> std::
         }
     };
 
-    let metadata = FileMetadata::new(&exif);
+    let metadata = FileMetadata::new(&exif, ctxt);
 
     ctxt.iso_hist.insert_opt(metadata.iso());
     ctxt.lens_hist.insert_opt(metadata.lens().cloned());

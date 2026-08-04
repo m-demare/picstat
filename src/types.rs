@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, rc::Rc};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Rational {
@@ -106,5 +106,28 @@ impl From<Rational> for FocalLength {
 impl FocalLength {
     pub fn to_f64(self) -> f64 {
         self.0.to_f64()
+    }
+}
+
+#[derive(Debug, Clone, PartialOrd, Ord)]
+pub struct Lens(Rc<String>);
+
+impl Display for Lens {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl PartialEq for Lens {
+    fn eq(&self, other: &Self) -> bool {
+        Rc::ptr_eq(&self.0, &other.0)
+    }
+}
+
+impl Eq for Lens {}
+
+impl From<Rc<String>> for Lens {
+    fn from(value: Rc<String>) -> Self {
+        Self(value)
     }
 }

@@ -16,6 +16,7 @@ mod context;
 mod file_metadata;
 mod histogram;
 mod process;
+mod string_interner;
 mod types;
 
 fn main() -> std::io::Result<()> {
@@ -30,18 +31,14 @@ fn main() -> std::io::Result<()> {
 
     println!("ISO");
     println!("{}", ctxt.iso_hist);
-    println!();
-    println!("Lens");
-    println!("{}", ctxt.lens_hist);
-    println!();
     println!("Shutter speed");
     println!("{}", ctxt.shutter_speed_hist);
-    println!();
     println!("Aperture");
     println!("{}", ctxt.aperture_hist);
-    println!();
     println!("Focal length");
     println!("{}", ctxt.focal_length_hist);
+    println!("Lens");
+    println!("{}", ctxt.lens_hist);
 
     Ok(())
 }
