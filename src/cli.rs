@@ -18,8 +18,11 @@ pub struct CliArgs {
     #[arg(short, long, default_value_t = false)]
     pub(super) stop_on_error: bool,
 
-    #[arg(short = 'w', long, default_value_t = true)]
-    pub(super) show_warnings: bool,
+    #[arg(short = 'w', long, default_value_t = false)]
+    pub(super) supress_warnings: bool,
+
+    #[arg(long, default_value_t = '█')]
+    pub(super) hist_char: char,
 }
 
 impl CliArgs {

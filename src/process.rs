@@ -33,7 +33,7 @@ pub fn process_file(path: &PathBuf, args: &CliArgs, ctxt: &mut Context) -> std::
             if args.stop_on_error {
                 return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, e));
             }
-            if args.show_warnings {
+            if !args.supress_warnings {
                 eprintln!("{e} - {}", path.to_string_lossy());
             }
             return Ok(());
