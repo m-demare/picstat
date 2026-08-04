@@ -16,3 +16,33 @@ impl StringInterner {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::rc::Rc;
+
+    use crate::string_interner::StringInterner;
+
+    #[test]
+    fn test_same_input_gets_same_output() {
+        let mut si = StringInterner::default();
+        let r1 = si.insert_or_get(b"hello");
+        let r2 = si.insert_or_get(b"hello");
+
+        assert!(Rc::ptr_eq(&r1, &r2));
+        assert_eq!(Rc::strong_count(&r1), 3);
+        assert_eq!(si.map.len(), 1);
+    }
+
+    #[test]
+    fn test_different_input_gets_new_string() {
+        let mut si = StringInterner::default();
+        let r1 = si.insert_or_get(b"hell");
+        let r2 = si.insert_or_get(b"hello");
+
+        assert!(!Rc::ptr_eq(&r1, &r2));
+        assert_eq!(Rc::strong_count(&r1), 2);
+        assert_eq!(Rc::strong_count(&r2), 2);
+        assert_eq!(si.map.len(), 2);
+    }
+}

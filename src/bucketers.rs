@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 pub mod exact_match_bucketer;
 pub mod log_bucketer;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Bucket<V: Ord + Eq> {
     min: V,
     max: V,

@@ -19,6 +19,10 @@ impl LogBucketer {
         let min = *hist.first_key_value().expect("not empty").0;
         let max = *hist.last_key_value().expect("not empty").0;
 
+        if min == max {
+            return (min, Vec::new());
+        }
+
         let minlog = min.aprox().log2();
         let maxlog = max.aprox().log2();
 
@@ -116,5 +120,95 @@ impl AproxF64 for ShutterSpeed {
 impl AproxF64 for FocalLength {
     fn aprox(&self) -> f64 {
         self.to_f64()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::BTreeMap;
+
+    use crate::bucketers::{Bucket, Bucketer, log_bucketer::LogBucketer};
+
+    #[test]
+    fn test_same_element_goes_to_same_bucket() {
+        let mut hist = BTreeMap::new();
+        hist.insert(10, 3);
+        let bucketer = LogBucketer::new();
+
+        let res = bucketer.split(&hist, 100);
+
+        dbg!(&res);
+        assert_eq!(res.len(), 1);
+        assert_eq!(res[0].1, 3);
+        assert_eq!(res[0].0.min, 10);
+        assert_eq!(res[0].0.max, 10);
+    }
+
+    #[test]
+    fn test_different_elements_go_to_different_buckets() {
+        let mut hist = BTreeMap::new();
+        hist.insert(10, 3);
+        hist.insert(20, 5);
+        let bucketer = LogBucketer::new();
+
+        let res = bucketer.split(&hist, 100);
+
+        assert_eq!(res.len(), 2);
+        assert!(res.contains(&(Bucket { min: 10, max: 10 }, 3)));
+        assert!(res.contains(&(Bucket { min: 20, max: 20 }, 5)));
+    }
+
+    #[test]
+    fn test_buckets_are_ordered() {
+        let mut hist = BTreeMap::new();
+        hist.insert(10, 3);
+        hist.insert(1000, 2);
+        hist.insert(100, 5);
+        let bucketer = LogBucketer::new();
+
+        let res = bucketer.split(&hist, 100);
+
+        assert_eq!(res.len(), 3);
+        assert_eq!(res[0].0.min, 10);
+        assert_eq!(res[1].0.min, 100);
+        assert_eq!(res[2].0.min, 1000);
+    }
+
+    #[test]
+    fn test_close_items_are_bucketed_toghether() {
+        let mut hist = BTreeMap::new();
+        hist.insert(10, 3);
+        hist.insert(20, 2);
+        hist.insert(100, 7);
+        let bucketer = LogBucketer::new();
+
+        let res = bucketer.split(&hist, 2);
+
+        assert_eq!(res.len(), 2);
+        assert_eq!(res[0].0.min, 10);
+        assert_eq!(res[0].0.max, 20);
+        assert_eq!(res[0].1, 5);
+        assert_eq!(res[1].0.min, 100);
+        assert_eq!(res[1].0.max, 100);
+        assert_eq!(res[1].1, 7);
+    }
+
+    #[test]
+    fn test_close_items_are_bucketed_toghether_2() {
+        let mut hist = BTreeMap::new();
+        hist.insert(10, 3);
+        hist.insert(90, 2);
+        hist.insert(100, 7);
+        let bucketer = LogBucketer::new();
+
+        let res = bucketer.split(&hist, 2);
+
+        assert_eq!(res.len(), 2);
+        assert_eq!(res[0].0.min, 10);
+        assert_eq!(res[0].0.max, 10);
+        assert_eq!(res[0].1, 3);
+        assert_eq!(res[1].0.min, 90);
+        assert_eq!(res[1].0.max, 100);
+        assert_eq!(res[1].1, 9);
     }
 }
