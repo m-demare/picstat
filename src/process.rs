@@ -8,11 +8,12 @@ pub fn process_dir(
     args: &CliArgs,
     ctxt: &mut Context,
 ) -> std::io::Result<()> {
+    ctxt.analysed_dirs += 1;
     for entry in dir {
         let path = entry?.path();
         if path.is_file() {
             process_file(&path, args, ctxt)?;
-        } else if path.is_dir() && args.recurse {
+        } else if path.is_dir() && args.recursive {
             process_dir(std::fs::read_dir(path)?, args, ctxt)?;
         }
     }
@@ -20,7 +21,7 @@ pub fn process_dir(
 }
 
 pub fn process_file(path: &PathBuf, args: &CliArgs, ctxt: &mut Context) -> std::io::Result<()> {
-    if !args.should_analyze(path) {
+    if !args.should_analyse(path) {
         return Ok(());
     }
 
@@ -33,7 +34,7 @@ pub fn process_file(path: &PathBuf, args: &CliArgs, ctxt: &mut Context) -> std::
             if args.stop_on_error {
                 return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, e));
             }
-            if !args.supress_warnings {
+            if !args.suppress_warnings {
                 eprintln!("{e} - {}", path.to_string_lossy());
             }
             return Ok(());
@@ -42,6 +43,7 @@ pub fn process_file(path: &PathBuf, args: &CliArgs, ctxt: &mut Context) -> std::
 
     let metadata = FileMetadata::new(&exif, ctxt);
 
+    ctxt.analysed_files += 1;
     ctxt.iso_hist.insert_opt(metadata.iso());
     ctxt.lens_hist.insert_opt(metadata.lens().cloned());
     ctxt.shutter_speed_hist.insert_opt(metadata.shutter_speed());

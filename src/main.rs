@@ -29,14 +29,20 @@ fn main() -> std::io::Result<()> {
     let mut ctxt = Context::new(&args);
     process_dir(dir, &args, &mut ctxt)?;
 
-    println!("ISO");
-    println!("{}", ctxt.iso_hist);
-    println!("Shutter speed");
-    println!("{}", ctxt.shutter_speed_hist);
-    println!("Aperture");
-    println!("{}", ctxt.aperture_hist);
+    println!(
+        "Analysed {} files in {} directories",
+        ctxt.analysed_files, ctxt.analysed_dirs
+    );
+    println!();
+
     println!("Focal length");
     println!("{}", ctxt.focal_length_hist);
+    println!("Aperture");
+    println!("{}", ctxt.aperture_hist);
+    println!("Shutter speed");
+    println!("{}", ctxt.shutter_speed_hist);
+    println!("ISO");
+    println!("{}", ctxt.iso_hist);
     println!("Lens");
     println!("{}", ctxt.lens_hist);
 
