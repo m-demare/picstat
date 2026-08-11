@@ -2,7 +2,7 @@ use exif::{In, Tag, Value};
 
 use crate::{
     context::Context,
-    types::{Aperture, FocalLength, Lens, Rational, ShutterSpeed},
+    types::{Aperture, Camera, FocalLength, Lens, Rational, ShutterSpeed},
 };
 
 #[derive(Debug)]
@@ -12,6 +12,7 @@ pub struct FileMetadata {
     shutter_speed: Option<ShutterSpeed>,
     focal_length: Option<FocalLength>,
     lens: Option<Lens>,
+    camera: Option<Camera>,
 }
 
 impl FileMetadata {
@@ -21,6 +22,7 @@ impl FileMetadata {
         let mut aperture = None;
         let mut focal_length = None;
         let mut lens = None;
+        let mut camera = None;
 
         if let Some(field) = exif.get_field(Tag::ISOSpeed, In::PRIMARY) {
             iso = field
@@ -61,7 +63,13 @@ impl FileMetadata {
         if let Some(field) = exif.get_field(Tag::LensModel, In::PRIMARY) {
             lens = field.value.get_string(0).map_or_else(
                 || todo!("LensModel {:?}", field.value),
-                |v| Lens::from(ctxt.lens_interner.insert_or_get(v)).into(),
+                |v| Lens::from(ctxt.string_interner.insert_or_get(v)).into(),
+            );
+        }
+        if let Some(field) = exif.get_field(Tag::Model, In::PRIMARY) {
+            camera = field.value.get_string(0).map_or_else(
+                || todo!("Model {:?}", field.value),
+                |v| Camera::from(ctxt.string_interner.insert_or_get(v)).into(),
             );
         }
 
@@ -71,6 +79,7 @@ impl FileMetadata {
             shutter_speed,
             focal_length,
             lens,
+            camera,
         }
     }
 
@@ -92,6 +101,10 @@ impl FileMetadata {
 
     pub const fn lens(&self) -> Option<&Lens> {
         self.lens.as_ref()
+    }
+
+    pub const fn camera(&self) -> Option<&Camera> {
+        self.camera.as_ref()
     }
 }
 

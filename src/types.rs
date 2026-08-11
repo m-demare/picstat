@@ -131,3 +131,26 @@ impl From<Rc<String>> for Lens {
         Self(value)
     }
 }
+
+#[derive(Debug, Clone, PartialOrd, Ord)]
+pub struct Camera(Rc<String>);
+
+impl Display for Camera {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl PartialEq for Camera {
+    fn eq(&self, other: &Self) -> bool {
+        Rc::ptr_eq(&self.0, &other.0)
+    }
+}
+
+impl Eq for Camera {}
+
+impl From<Rc<String>> for Camera {
+    fn from(value: Rc<String>) -> Self {
+        Self(value)
+    }
+}

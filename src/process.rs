@@ -49,6 +49,7 @@ pub fn process_file(path: &PathBuf, args: &CliArgs, ctxt: &mut Context) -> std::
     ctxt.shutter_speed_hist.insert_opt(metadata.shutter_speed());
     ctxt.aperture_hist.insert_opt(metadata.aperture());
     ctxt.focal_length_hist.insert_opt(metadata.focal_length());
+    ctxt.camera_hist.insert_opt(metadata.camera().cloned());
 
     Ok(())
 }

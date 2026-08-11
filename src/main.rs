@@ -45,6 +45,8 @@ fn main() -> std::io::Result<()> {
     println!("{}", ctxt.iso_hist);
     println!("Lens");
     println!("{}", ctxt.lens_hist);
+    println!("Camera body");
+    println!("{}", ctxt.camera_hist);
 
     Ok(())
 }
