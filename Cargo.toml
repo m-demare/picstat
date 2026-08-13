@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 clap = { version = "4.6.5", features = ["derive"] }
 nom-exif = "3.6.2"
+walkdir = "2.5.0"

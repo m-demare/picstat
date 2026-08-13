@@ -1,26 +1,29 @@
+use walkdir::WalkDir;
+
 use crate::Context;
 use crate::cli::CliArgs;
 use crate::file_metadata::FileMetadata;
 use std::path::Path;
 
-pub fn process_dir(
-    dir: std::fs::ReadDir,
-    args: &CliArgs,
-    ctxt: &mut Context,
-) -> std::io::Result<()> {
-    ctxt.analysed_dirs += 1;
-    for entry in dir {
-        let path = entry?.path();
-        if path.is_file() {
-            process_file(&path, args, ctxt)?;
-        } else if path.is_dir() && args.recursive {
-            process_dir(std::fs::read_dir(path)?, args, ctxt)?;
+pub fn process_dir(dir: &Path, args: &CliArgs, ctxt: &mut Context) -> std::io::Result<()> {
+    let walker = build_walker(dir, args);
+
+    walk(walker, args, ctxt)
+}
+
+fn walk(walker: WalkDir, args: &CliArgs, ctxt: &mut Context) -> std::io::Result<()> {
+    for f in walker {
+        let f = f?;
+        if f.file_type().is_file() {
+            process_file(f.path(), args, ctxt)?;
+        } else if f.file_type().is_dir() {
+            ctxt.analysed_dirs += 1;
         }
     }
     Ok(())
 }
 
-pub fn process_file(path: &Path, args: &CliArgs, ctxt: &mut Context) -> std::io::Result<()> {
+fn process_file(path: &Path, args: &CliArgs, ctxt: &mut Context) -> std::io::Result<()> {
     if !args.should_analyse(path) {
         return Ok(());
     }
@@ -47,4 +50,13 @@ pub fn process_file(path: &Path, args: &CliArgs, ctxt: &mut Context) -> std::io:
     ctxt.camera_hist.insert_opt(metadata.camera().cloned());
 
     Ok(())
+}
+
+fn build_walker(dir: &Path, args: &CliArgs) -> WalkDir {
+    let mut walker = WalkDir::new(dir);
+
+    if !args.recursive {
+        walker = walker.max_depth(1);
+    }
+    walker
 }

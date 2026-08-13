@@ -24,10 +24,9 @@ fn main() -> std::io::Result<()> {
 
     let curr_dir = &PathBuf::from(".");
     let path = args.path.as_ref().unwrap_or(curr_dir);
-    let dir = std::fs::read_dir(path)?;
 
     let mut ctxt = Context::new(&args);
-    process_dir(dir, &args, &mut ctxt)?;
+    process_dir(path, &args, &mut ctxt)?;
 
     println!(
         "Analysed {} files in {} directories",
