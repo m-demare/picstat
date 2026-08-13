@@ -27,3 +27,13 @@ Options:
 ## Download
 Checkout the [Releases](https://github.com/m-demare/picstat/releases) page to find downloads for Linux, Windows and MacOS.
 
+## Contributions
+This project was hand-written with love, without the use of generative AI. I'd like to
+keep it that way. While contributions are welcome, I don't feel like reviewing
+AI-generated code in my free time.
+
+In general, try to follow the style of the existing code. When adding a new feature or
+making significant changes, consider opening an issue beforehand to discuss the reach of
+the PR, and to avoid duplicating work. Make sure the tests pass and both clippy and the
+formatter are happy before opening a PR.
+
