@@ -6,12 +6,12 @@ pub struct StringInterner {
 }
 
 impl StringInterner {
-    pub fn insert_or_get(&mut self, key: &[u8]) -> Rc<String> {
-        if let Some(s) = self.map.get(key) {
+    pub fn insert_or_get<T: AsRef<[u8]>>(&mut self, key: T) -> Rc<String> {
+        if let Some(s) = self.map.get(key.as_ref()) {
             s.clone()
         } else {
-            let val = Rc::new(String::from_utf8_lossy(key).into_owned());
-            self.map.insert(key.to_vec(), val.clone());
+            let val = Rc::new(String::from_utf8_lossy(key.as_ref()).into_owned());
+            self.map.insert(key.as_ref().to_vec(), val.clone());
             val
         }
     }

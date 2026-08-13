@@ -1,7 +1,7 @@
 use crate::Context;
 use crate::cli::CliArgs;
 use crate::file_metadata::FileMetadata;
-use std::path::PathBuf;
+use std::path::Path;
 
 pub fn process_dir(
     dir: std::fs::ReadDir,
@@ -20,19 +20,16 @@ pub fn process_dir(
     Ok(())
 }
 
-pub fn process_file(path: &PathBuf, args: &CliArgs, ctxt: &mut Context) -> std::io::Result<()> {
+pub fn process_file(path: &Path, args: &CliArgs, ctxt: &mut Context) -> std::io::Result<()> {
     if !args.should_analyse(path) {
         return Ok(());
     }
 
-    let file = std::fs::File::open(path)?;
-    let mut bufreader = std::io::BufReader::new(&file);
-    let exifreader = exif::Reader::new();
-    let exif = match exifreader.read_from_container(&mut bufreader) {
-        Ok(exif) => exif,
+    let metadata = match FileMetadata::from_exif(ctxt, path) {
+        Ok(value) => value,
         Err(e) => {
             if args.stop_on_error {
-                return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, e));
+                return Err(e);
             }
             if !args.suppress_warnings {
                 eprintln!("{e} - {}", path.to_string_lossy());
@@ -40,8 +37,6 @@ pub fn process_file(path: &PathBuf, args: &CliArgs, ctxt: &mut Context) -> std::
             return Ok(());
         }
     };
-
-    let metadata = FileMetadata::new(&exif, ctxt);
 
     ctxt.analysed_files += 1;
     ctxt.iso_hist.insert_opt(metadata.iso());

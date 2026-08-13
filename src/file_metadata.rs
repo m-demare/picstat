@@ -1,8 +1,10 @@
-use exif::{In, Tag, Value};
+use std::{io, path::Path};
+
+use nom_exif::{EntryValue, ExifTag, MediaSource};
 
 use crate::{
     context::Context,
-    types::{Aperture, Camera, FocalLength, Lens, Rational, ShutterSpeed},
+    types::{Aperture, Camera, FocalLength, Lens, ShutterSpeed},
 };
 
 #[derive(Debug)]
@@ -16,62 +18,38 @@ pub struct FileMetadata {
 }
 
 impl FileMetadata {
-    pub fn new(exif: &exif::Exif, ctxt: &mut Context) -> Self {
-        let mut iso = None;
-        let mut shutter_speed = None;
-        let mut aperture = None;
-        let mut focal_length = None;
-        let mut lens = None;
-        let mut camera = None;
+    pub fn from_exif(ctxt: &mut Context, path: &Path) -> Result<Self, io::Error> {
+        let ms = wrap_exif_err(MediaSource::open(path))?;
+        let iter = wrap_exif_err(ctxt.parser.parse_exif(ms))?;
+        let exif = iter.into();
+        Ok(Self::parse_exif(&exif, ctxt))
+    }
 
-        if let Some(field) = exif.get_field(Tag::ISOSpeed, In::PRIMARY) {
-            iso = field
-                .value
-                .get_uint(0)
-                .or_else(|| todo!("ISOSpeed {:?}", field.value));
-        }
-        if let Some(field) = exif.get_field(Tag::PhotographicSensitivity, In::PRIMARY) {
-            iso = field
-                .value
-                .get_uint(0)
-                .or_else(|| todo!("PhotographicSensitivity {:?}", field.value));
-        }
-        if let Some(field) = exif.get_field(Tag::ExposureTime, In::PRIMARY) {
-            shutter_speed = field
-                .value
-                .get_rational(0)
-                .map_or_else(
-                    || todo!("ExposureTime {:?}", field.value),
-                    ShutterSpeed::from,
-                )
-                .into();
-        }
-        if let Some(field) = exif.get_field(Tag::FNumber, In::PRIMARY) {
-            aperture = field
-                .value
-                .get_rational(0)
-                .map_or_else(|| todo!("FNumber {:?}", field.value), Aperture::from)
-                .into();
-        }
-        if let Some(field) = exif.get_field(Tag::FocalLength, In::PRIMARY) {
-            focal_length = field
-                .value
-                .get_rational(0)
-                .map_or_else(|| todo!("FocalLength {:?}", field.value), FocalLength::from)
-                .into();
-        }
-        if let Some(field) = exif.get_field(Tag::LensModel, In::PRIMARY) {
-            lens = field.value.get_string(0).map_or_else(
-                || todo!("LensModel {:?}", field.value),
-                |v| Lens::from(ctxt.string_interner.insert_or_get(v)).into(),
-            );
-        }
-        if let Some(field) = exif.get_field(Tag::Model, In::PRIMARY) {
-            camera = field.value.get_string(0).map_or_else(
-                || todo!("Model {:?}", field.value),
-                |v| Camera::from(ctxt.string_interner.insert_or_get(v)).into(),
-            );
-        }
+    fn parse_exif(exif: &nom_exif::Exif, ctxt: &mut Context) -> Self {
+        let iso = exif
+            .get(ExifTag::ISOSpeedRatings)
+            .and_then(EntryValue::try_as_integer)
+            .and_then(|v| v.try_into().ok());
+        let aperture = exif
+            .get(ExifTag::FNumber)
+            .and_then(EntryValue::as_urational)
+            .map(Aperture::from);
+        let shutter_speed = exif
+            .get(ExifTag::ExposureTime)
+            .and_then(EntryValue::as_urational)
+            .map(ShutterSpeed::from);
+        let focal_length = exif
+            .get(ExifTag::FocalLength)
+            .and_then(EntryValue::as_urational)
+            .map(FocalLength::from);
+        let lens = exif
+            .get(ExifTag::LensModel)
+            .and_then(EntryValue::as_str)
+            .map(|v| Lens::from(ctxt.string_interner.insert_or_get(v)));
+        let camera = exif
+            .get(ExifTag::Model)
+            .and_then(EntryValue::as_str)
+            .map(|v| Camera::from(ctxt.string_interner.insert_or_get(v)));
 
         Self {
             iso,
@@ -108,34 +86,6 @@ impl FileMetadata {
     }
 }
 
-trait GetRational {
-    fn get_rational(&self, index: usize) -> Option<Rational>;
-}
-
-impl GetRational for Value {
-    fn get_rational(&self, index: usize) -> Option<Rational> {
-        if let Self::Rational(r) = self {
-            if let Some(exif::Rational { num, denom }) = r.get(index) {
-                Some(Rational::new(*num, *denom))
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }
-}
-
-trait GetString {
-    fn get_string(&self, index: usize) -> Option<&[u8]>;
-}
-
-impl GetString for Value {
-    fn get_string(&self, index: usize) -> Option<&[u8]> {
-        if let Self::Ascii(r) = self {
-            r.get(index).map(|v| &**v)
-        } else {
-            None
-        }
-    }
+fn wrap_exif_err<T>(res: Result<T, nom_exif::Error>) -> io::Result<T> {
+    res.map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))
 }

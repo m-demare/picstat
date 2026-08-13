@@ -1,5 +1,7 @@
 use std::{fmt::Display, rc::Rc};
 
+use nom_exif::URational;
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Rational {
     pub num: u32,
@@ -42,6 +44,12 @@ impl Rational {
     }
 }
 
+impl From<URational> for Rational {
+    fn from(value: URational) -> Self {
+        Self::new(value.numerator(), value.denominator())
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Aperture(Rational);
 
@@ -51,9 +59,9 @@ impl Display for Aperture {
     }
 }
 
-impl From<Rational> for Aperture {
-    fn from(value: Rational) -> Self {
-        Self(value)
+impl<T: Into<Rational>> From<T> for Aperture {
+    fn from(value: T) -> Self {
+        Self(value.into())
     }
 }
 
@@ -76,9 +84,9 @@ impl Display for ShutterSpeed {
     }
 }
 
-impl From<Rational> for ShutterSpeed {
-    fn from(value: Rational) -> Self {
-        Self(value)
+impl<T: Into<Rational>> From<T> for ShutterSpeed {
+    fn from(value: T) -> Self {
+        Self(value.into())
     }
 }
 
@@ -97,9 +105,9 @@ impl Display for FocalLength {
     }
 }
 
-impl From<Rational> for FocalLength {
-    fn from(value: Rational) -> Self {
-        Self(value)
+impl<T: Into<Rational>> From<T> for FocalLength {
+    fn from(value: T) -> Self {
+        Self(value.into())
     }
 }
 

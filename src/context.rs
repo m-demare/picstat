@@ -1,3 +1,5 @@
+use nom_exif::MediaParser;
+
 use crate::{
     bucketers::{exact_match_bucketer::ExactMatchBucketer, log_bucketer::LogBucketer},
     cli::CliArgs,
@@ -8,6 +10,7 @@ use crate::{
 
 pub struct Context {
     pub(crate) string_interner: StringInterner,
+    pub(crate) parser: MediaParser,
 
     pub(crate) iso_hist: Histogram<u32>,
     pub(crate) shutter_speed_hist: Histogram<ShutterSpeed>,
@@ -24,12 +27,15 @@ impl Context {
     pub fn new(args: &CliArgs) -> Self {
         Self {
             string_interner: StringInterner::default(),
+            parser: MediaParser::default(),
+
             iso_hist: Histogram::new(Box::new(LogBucketer::new()), args.hist_char),
             shutter_speed_hist: Histogram::new(Box::new(LogBucketer::new()), args.hist_char),
             aperture_hist: Histogram::new(Box::new(LogBucketer::new()), args.hist_char),
             focal_length_hist: Histogram::new(Box::new(LogBucketer::new()), args.hist_char),
             lens_hist: Histogram::new(Box::new(ExactMatchBucketer::new()), args.hist_char),
             camera_hist: Histogram::new(Box::new(ExactMatchBucketer::new()), args.hist_char),
+
             analysed_files: 0,
             analysed_dirs: 0,
         }

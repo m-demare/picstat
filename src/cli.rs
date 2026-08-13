@@ -11,7 +11,7 @@ pub struct CliArgs {
     pub(super) path: Option<PathBuf>,
 
     /// File extensions to analyse ( e.g. -e jpg -e cr2 )
-    #[arg(short, long, value_parser = |s: &str| -> Result<String, std::convert::Infallible> { Ok(s.to_lowercase()) })]
+    #[arg(short, long)]
     pub(super) extensions: Vec<String>,
 
     /// Analyse subdirectories recursively
@@ -37,10 +37,7 @@ impl CliArgs {
             return true;
         }
         match e.extension() {
-            Some(ext) => self
-                .extensions
-                .iter()
-                .any(|e| **e == *ext.to_ascii_lowercase()),
+            Some(ext) => self.extensions.iter().any(|e| ext.eq_ignore_ascii_case(e)),
             None => false,
         }
     }
