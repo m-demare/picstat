@@ -37,7 +37,12 @@ fn main() -> std::io::Result<()> {
 
     println!(
         "Analysed {} files in {} directories",
-        ctxt.analysed_files, if args.recursive { ctxt.analysed_dirs } else { 1 }
+        ctxt.analysed_files,
+        if args.recursive {
+            ctxt.analysed_dirs
+        } else {
+            1
+        }
     );
     println!();
 

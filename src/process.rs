@@ -42,7 +42,8 @@ fn process_file(path: &Path, args: &CliArgs, ctxt: &mut Context) -> std::io::Res
                 return Err(e);
             }
             if !args.suppress_warnings {
-                ctxt.warnings.push(format!("{e} - {}", path.to_string_lossy()));
+                ctxt.warnings
+                    .push(format!("{e} - {}", path.to_string_lossy()));
             }
             return Ok(());
         }
