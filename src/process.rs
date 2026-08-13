@@ -3,15 +3,24 @@ use walkdir::WalkDir;
 use crate::Context;
 use crate::cli::CliArgs;
 use crate::file_metadata::FileMetadata;
+use crate::progress_bar::build_progress_bar;
 use std::path::Path;
 
 pub fn process_dir(dir: &Path, args: &CliArgs, ctxt: &mut Context) -> std::io::Result<()> {
+    let total_count = count_files(dir, args);
+
+    ctxt.progress_bar = build_progress_bar(args, total_count);
+
     let walker = build_walker(dir, args);
 
     walk(walker, args, ctxt)
 }
 
-fn walk(walker: WalkDir, args: &CliArgs, ctxt: &mut Context) -> std::io::Result<()> {
+fn walk<I: Iterator<Item = Result<walkdir::DirEntry, walkdir::Error>>>(
+    walker: I,
+    args: &CliArgs,
+    ctxt: &mut Context,
+) -> std::io::Result<()> {
     for f in walker {
         let f = f?;
         if f.file_type().is_file() {
@@ -24,9 +33,7 @@ fn walk(walker: WalkDir, args: &CliArgs, ctxt: &mut Context) -> std::io::Result<
 }
 
 fn process_file(path: &Path, args: &CliArgs, ctxt: &mut Context) -> std::io::Result<()> {
-    if !args.should_analyse(path) {
-        return Ok(());
-    }
+    ctxt.progress_bar.inc(1);
 
     let metadata = match FileMetadata::from_exif(ctxt, path) {
         Ok(value) => value,
@@ -35,7 +42,7 @@ fn process_file(path: &Path, args: &CliArgs, ctxt: &mut Context) -> std::io::Res
                 return Err(e);
             }
             if !args.suppress_warnings {
-                eprintln!("{e} - {}", path.to_string_lossy());
+                ctxt.warnings.push(format!("{e} - {}", path.to_string_lossy()));
             }
             return Ok(());
         }
@@ -52,11 +59,26 @@ fn process_file(path: &Path, args: &CliArgs, ctxt: &mut Context) -> std::io::Res
     Ok(())
 }
 
-fn build_walker(dir: &Path, args: &CliArgs) -> WalkDir {
+fn count_files(dir: &Path, args: &CliArgs) -> usize {
+    let walker = build_walker(dir, args);
+    walker
+        .into_iter()
+        .filter_map(Result::ok)
+        .filter(|f| f.file_type().is_file())
+        .count()
+}
+
+fn build_walker(
+    dir: &Path,
+    args: &CliArgs,
+) -> impl Iterator<Item = Result<walkdir::DirEntry, walkdir::Error>> {
     let mut walker = WalkDir::new(dir);
 
     if !args.recursive {
         walker = walker.max_depth(1);
     }
+
     walker
+        .into_iter()
+        .filter_entry(|f| !f.file_type().is_file() || args.should_analyse(f.path()))
 }

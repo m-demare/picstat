@@ -16,6 +16,7 @@ mod context;
 mod file_metadata;
 mod histogram;
 mod process;
+mod progress_bar;
 mod string_interner;
 mod types;
 
@@ -28,9 +29,15 @@ fn main() -> std::io::Result<()> {
     let mut ctxt = Context::new(&args);
     process_dir(path, &args, &mut ctxt)?;
 
+    ctxt.progress_bar.finish();
+
+    println!();
+    ctxt.warnings.iter().for_each(|w| println!("{w}"));
+    println!();
+
     println!(
         "Analysed {} files in {} directories",
-        ctxt.analysed_files, ctxt.analysed_dirs
+        ctxt.analysed_files, if args.recursive { ctxt.analysed_dirs } else { 1 }
     );
     println!();
 

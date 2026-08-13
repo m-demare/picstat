@@ -32,11 +32,11 @@ pub struct CliArgs {
 }
 
 impl CliArgs {
-    pub(super) fn should_analyse(&self, e: &Path) -> bool {
+    pub(super) fn should_analyse(&self, path: &Path) -> bool {
         if self.extensions.is_empty() {
             return true;
         }
-        match e.extension() {
+        match path.extension() {
             Some(ext) => self.extensions.iter().any(|e| ext.eq_ignore_ascii_case(e)),
             None => false,
         }

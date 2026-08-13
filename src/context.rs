@@ -1,3 +1,4 @@
+use indicatif::ProgressBar;
 use nom_exif::MediaParser;
 
 use crate::{
@@ -21,6 +22,9 @@ pub struct Context {
 
     pub(crate) analysed_files: u32,
     pub(crate) analysed_dirs: u32,
+
+    pub(crate) progress_bar: ProgressBar,
+    pub(crate) warnings: Vec<String>,
 }
 
 impl Context {
@@ -38,6 +42,9 @@ impl Context {
 
             analysed_files: 0,
             analysed_dirs: 0,
+
+            progress_bar: ProgressBar::new(0),
+            warnings: Vec::default(),
         }
     }
 }
