@@ -17,7 +17,7 @@ impl Default for ExactMatchBucketer {
 }
 
 impl<T: Ord + Eq + Clone> Bucketer<T> for ExactMatchBucketer {
-    fn split(&self, hist: &BTreeMap<T, usize>, _target_buckets: u8) -> Vec<(Bucket<T>, usize)> {
+    fn split(&self, hist: &BTreeMap<T, usize>) -> Vec<(Bucket<T>, usize)> {
         hist.iter()
             .map(|(key, count)| (Bucket::new(key.clone(), key.clone()), *count))
             .collect()
@@ -36,7 +36,7 @@ mod tests {
         hist.insert("hi", 3);
         let bucketer = ExactMatchBucketer::new();
 
-        let res = bucketer.split(&hist, 100);
+        let res = bucketer.split(&hist);
 
         assert_eq!(res.len(), 1);
         assert_eq!(res[0].1, 3);
@@ -52,7 +52,7 @@ mod tests {
         hist.insert("howdy", 2);
         let bucketer = ExactMatchBucketer::new();
 
-        let res = bucketer.split(&hist, 100);
+        let res = bucketer.split(&hist);
 
         assert_eq!(res.len(), 3);
         assert!(res.contains(&(
@@ -86,7 +86,7 @@ mod tests {
         hist.insert("howdy", 2);
         let bucketer = ExactMatchBucketer::new();
 
-        let res = bucketer.split(&hist, 100);
+        let res = bucketer.split(&hist);
 
         assert_eq!(res.len(), 3);
         assert_eq!(res[0].0.min, "bye");

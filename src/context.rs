@@ -36,12 +36,12 @@ impl Context {
             string_interner: StringInterner::default(),
             parser: MediaParser::default(),
 
-            iso_hist: Histogram::new(Box::new(LogBucketer::new()), args.hist_char),
-            shutter_speed_hist: Histogram::new(Box::new(LogBucketer::new()), args.hist_char),
-            aperture_hist: Histogram::new(Box::new(LogBucketer::new()), args.hist_char),
-            focal_length_hist: Histogram::new(Box::new(LogBucketer::new()), args.hist_char),
-            lens_hist: Histogram::new(Box::new(ExactMatchBucketer::new()), args.hist_char),
-            camera_hist: Histogram::new(Box::new(ExactMatchBucketer::new()), args.hist_char),
+            iso_hist: Histogram::new(Box::new(LogBucketer::default()), args.hist_char),
+            shutter_speed_hist: Histogram::new(Box::new(LogBucketer::default()), args.hist_char),
+            aperture_hist: Histogram::new(Box::new(LogBucketer::default()), args.hist_char),
+            focal_length_hist: Histogram::new(Box::new(LogBucketer::default()), args.hist_char),
+            lens_hist: Histogram::new(Box::new(ExactMatchBucketer::default()), args.hist_char),
+            camera_hist: Histogram::new(Box::new(ExactMatchBucketer::default()), args.hist_char),
 
             analysed_files: 0,
             analysed_dirs: 0,

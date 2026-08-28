@@ -39,7 +39,7 @@ impl<V: Ord + Eq + Debug + Display> Display for Histogram<V> {
         clippy::cast_sign_loss
     )]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let buckets = self.bucketer.split(&self.items, 10);
+        let buckets = self.bucketer.split(&self.items);
         if let Some(&max) = buckets.iter().map(|(_, count)| count).max() {
             let max_columns = 50_f64;
             let cols_per_count = max as f64 / max_columns;

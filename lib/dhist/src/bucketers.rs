@@ -24,5 +24,5 @@ impl<V: Ord + Eq> Bucket<V> {
 }
 
 pub trait Bucketer<V: Ord + Eq> {
-    fn split(&self, hist: &BTreeMap<V, usize>, target_buckets: u8) -> Vec<(Bucket<V>, usize)>;
+    fn split(&self, hist: &BTreeMap<V, usize>) -> Vec<(Bucket<V>, usize)>;
 }

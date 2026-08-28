@@ -2,11 +2,13 @@ use std::collections::BTreeMap;
 
 use crate::bucketers::{Bucket, Bucketer};
 
-pub struct LogBucketer {}
+pub struct LogBucketer {
+    target_buckets: u8
+}
 
 impl LogBucketer {
-    pub const fn new() -> Self {
-        Self {}
+    pub const fn new(target_buckets: u8) -> Self {
+        Self { target_buckets }
     }
 
     fn compute_limits<T: AproxF64 + Ord + Eq + Copy>(
@@ -37,22 +39,17 @@ impl LogBucketer {
 
 impl Default for LogBucketer {
     fn default() -> Self {
-        Self::new()
+        Self::new(10)
     }
 }
 
-// #[expect(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-// pub fn clip_iso(n: f64) -> u32 {
-//     ((n / 100.0).log2().round().exp2() * 100.0) as u32
-// }
-
 impl<T: AproxF64 + Ord + Eq + Copy> Bucketer<T> for LogBucketer {
-    fn split(&self, hist: &BTreeMap<T, usize>, target_buckets: u8) -> Vec<(Bucket<T>, usize)> {
+    fn split(&self, hist: &BTreeMap<T, usize>) -> Vec<(Bucket<T>, usize)> {
         if hist.is_empty() {
             return vec![];
         }
 
-        let (min, mut limits) = Self::compute_limits(hist, target_buckets);
+        let (min, mut limits) = Self::compute_limits(hist, self.target_buckets);
 
         let mut bucket_start = min;
         let mut bucket_end = min;
@@ -106,9 +103,9 @@ mod tests {
     fn test_same_element_goes_to_same_bucket() {
         let mut hist = BTreeMap::new();
         hist.insert(10, 3);
-        let bucketer = LogBucketer::new();
+        let bucketer = LogBucketer::new(100);
 
-        let res = bucketer.split(&hist, 100);
+        let res = bucketer.split(&hist);
 
         dbg!(&res);
         assert_eq!(res.len(), 1);
@@ -122,9 +119,9 @@ mod tests {
         let mut hist = BTreeMap::new();
         hist.insert(10, 3);
         hist.insert(20, 5);
-        let bucketer = LogBucketer::new();
+        let bucketer = LogBucketer::new(100);
 
-        let res = bucketer.split(&hist, 100);
+        let res = bucketer.split(&hist);
 
         assert_eq!(res.len(), 2);
         assert!(res.contains(&(Bucket { min: 10, max: 10 }, 3)));
@@ -137,9 +134,9 @@ mod tests {
         hist.insert(10, 3);
         hist.insert(1000, 2);
         hist.insert(100, 5);
-        let bucketer = LogBucketer::new();
+        let bucketer = LogBucketer::new(100);
 
-        let res = bucketer.split(&hist, 100);
+        let res = bucketer.split(&hist);
 
         assert_eq!(res.len(), 3);
         assert_eq!(res[0].0.min, 10);
@@ -153,9 +150,9 @@ mod tests {
         hist.insert(10, 3);
         hist.insert(20, 2);
         hist.insert(100, 7);
-        let bucketer = LogBucketer::new();
+        let bucketer = LogBucketer::new(2);
 
-        let res = bucketer.split(&hist, 2);
+        let res = bucketer.split(&hist);
 
         assert_eq!(res.len(), 2);
         assert_eq!(res[0].0.min, 10);
@@ -172,9 +169,9 @@ mod tests {
         hist.insert(10, 3);
         hist.insert(90, 2);
         hist.insert(100, 7);
-        let bucketer = LogBucketer::new();
+        let bucketer = LogBucketer::new(2);
 
-        let res = bucketer.split(&hist, 2);
+        let res = bucketer.split(&hist);
 
         assert_eq!(res.len(), 2);
         assert_eq!(res[0].0.min, 10);
