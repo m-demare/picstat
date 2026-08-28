@@ -1,5 +1,6 @@
 use std::{fmt::Display, rc::Rc};
 
+use dhist::bucketers::log_bucketer::AproxF64;
 use nom_exif::URational;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -160,5 +161,23 @@ impl Eq for Camera {}
 impl From<Rc<String>> for Camera {
     fn from(value: Rc<String>) -> Self {
         Self(value)
+    }
+}
+
+impl AproxF64 for Aperture {
+    fn aprox(&self) -> f64 {
+        self.to_f64()
+    }
+}
+
+impl AproxF64 for ShutterSpeed {
+    fn aprox(&self) -> f64 {
+        self.to_f64()
+    }
+}
+
+impl AproxF64 for FocalLength {
+    fn aprox(&self) -> f64 {
+        self.to_f64()
     }
 }

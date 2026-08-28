@@ -1,9 +1,6 @@
 use std::collections::BTreeMap;
 
-use crate::{
-    bucketers::{Bucket, Bucketer},
-    types::{Aperture, FocalLength, Rational, ShutterSpeed},
-};
+use crate::bucketers::{Bucket, Bucketer};
 
 pub struct LogBucketer {}
 
@@ -38,6 +35,12 @@ impl LogBucketer {
     }
 }
 
+impl Default for LogBucketer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 // #[expect(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 // pub fn clip_iso(n: f64) -> u32 {
 //     ((n / 100.0).log2().round().exp2() * 100.0) as u32
@@ -62,13 +65,7 @@ impl<T: AproxF64 + Ord + Eq + Copy> Bucketer<T> for LogBucketer {
             if let Some(cl) = current_limit
                 && key.aprox() > cl
             {
-                buckets.push((
-                    Bucket {
-                        min: bucket_start,
-                        max: bucket_end,
-                    },
-                    current_count,
-                ));
+                buckets.push((Bucket::new(bucket_start, bucket_end), current_count));
                 bucket_start = *key;
                 current_count = 0;
                 current_limit = limits.pop();
@@ -96,30 +93,6 @@ pub trait AproxF64 {
 impl AproxF64 for u32 {
     fn aprox(&self) -> f64 {
         f64::from(*self)
-    }
-}
-
-impl AproxF64 for Rational {
-    fn aprox(&self) -> f64 {
-        self.to_f64()
-    }
-}
-
-impl AproxF64 for Aperture {
-    fn aprox(&self) -> f64 {
-        self.to_f64()
-    }
-}
-
-impl AproxF64 for ShutterSpeed {
-    fn aprox(&self) -> f64 {
-        self.to_f64()
-    }
-}
-
-impl AproxF64 for FocalLength {
-    fn aprox(&self) -> f64 {
-        self.to_f64()
     }
 }
 

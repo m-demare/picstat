@@ -10,11 +10,9 @@ use cli::CliArgs;
 
 use crate::{context::Context, process::process_dir};
 
-mod bucketers;
 mod cli;
 mod context;
 mod file_metadata;
-mod histogram;
 mod process;
 mod progress_bar;
 mod string_interner;

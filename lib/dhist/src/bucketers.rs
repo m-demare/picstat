@@ -10,6 +10,10 @@ pub struct Bucket<V: Ord + Eq> {
 }
 
 impl<V: Ord + Eq> Bucket<V> {
+    pub const fn new(min: V, max: V) -> Self {
+        Self { min, max }
+    }
+
     pub const fn min(&self) -> &V {
         &self.min
     }

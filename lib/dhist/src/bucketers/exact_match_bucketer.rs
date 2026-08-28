@@ -10,18 +10,16 @@ impl ExactMatchBucketer {
     }
 }
 
+impl Default for ExactMatchBucketer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T: Ord + Eq + Clone> Bucketer<T> for ExactMatchBucketer {
     fn split(&self, hist: &BTreeMap<T, usize>, _target_buckets: u8) -> Vec<(Bucket<T>, usize)> {
         hist.iter()
-            .map(|(key, count)| {
-                (
-                    Bucket {
-                        min: key.clone(),
-                        max: key.clone(),
-                    },
-                    *count,
-                )
-            })
+            .map(|(key, count)| (Bucket::new(key.clone(), key.clone()), *count))
             .collect()
     }
 }

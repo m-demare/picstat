@@ -11,7 +11,7 @@ pub struct Histogram<V: Ord + Eq + Debug + Display> {
 }
 
 impl<V: Ord + Eq + Debug + Display> Histogram<V> {
-    pub(crate) fn new(bucketer: Box<dyn Bucketer<V>>, hist_char: char) -> Self {
+    pub fn new(bucketer: Box<dyn Bucketer<V>>, hist_char: char) -> Self {
         Self {
             items: BTreeMap::default(),
             unknown: 0,
@@ -20,11 +20,11 @@ impl<V: Ord + Eq + Debug + Display> Histogram<V> {
         }
     }
 
-    pub(crate) fn insert(&mut self, v: V) {
+    pub fn insert(&mut self, v: V) {
         *self.items.entry(v).or_default() += 1;
     }
 
-    pub(crate) fn insert_opt(&mut self, v: Option<V>) {
+    pub fn insert_opt(&mut self, v: Option<V>) {
         match v {
             Some(v) => self.insert(v),
             None => self.unknown += 1,

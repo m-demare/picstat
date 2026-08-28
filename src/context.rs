@@ -2,11 +2,14 @@ use indicatif::ProgressBar;
 use nom_exif::MediaParser;
 
 use crate::{
-    bucketers::{exact_match_bucketer::ExactMatchBucketer, log_bucketer::LogBucketer},
     cli::CliArgs,
-    histogram::Histogram,
     string_interner::StringInterner,
     types::{Aperture, Camera, FocalLength, Lens, ShutterSpeed},
+};
+
+use dhist::{
+    bucketers::{exact_match_bucketer::ExactMatchBucketer, log_bucketer::LogBucketer},
+    histogram::Histogram,
 };
 
 pub struct Context {
