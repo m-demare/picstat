@@ -1,6 +1,8 @@
 use std::collections::BTreeMap;
 
+pub mod aprox_bucketers;
 pub mod exact_match_bucketer;
+pub mod linear_bucketer;
 pub mod log_bucketer;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -25,4 +27,8 @@ impl<V: Ord + Eq> Bucket<V> {
 
 pub trait Bucketer<V: Ord + Eq> {
     fn split(&self, hist: &BTreeMap<V, usize>) -> Vec<(Bucket<V>, usize)>;
+}
+
+pub trait AproxF64 {
+    fn aprox(&self) -> f64;
 }

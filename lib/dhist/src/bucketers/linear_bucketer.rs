@@ -1,33 +1,33 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, convert::identity};
 
 use crate::bucketers::{
     AproxF64, Bucket, Bucketer,
     aprox_bucketers::{buckets_by_limits, compute_buckets_limits},
 };
 
-pub struct LogBucketer {
+pub struct LinearBucketer {
     target_buckets: u8,
 }
 
-impl LogBucketer {
+impl LinearBucketer {
     pub const fn new(target_buckets: u8) -> Self {
         Self { target_buckets }
     }
 }
 
-impl Default for LogBucketer {
+impl Default for LinearBucketer {
     fn default() -> Self {
         Self::new(10)
     }
 }
 
-impl<T: AproxF64 + Ord + Eq + Copy> Bucketer<T> for LogBucketer {
+impl<T: AproxF64 + Ord + Eq + Copy> Bucketer<T> for LinearBucketer {
     fn split(&self, hist: &BTreeMap<T, usize>) -> Vec<(Bucket<T>, usize)> {
         if hist.is_empty() {
             return vec![];
         }
 
-        let (min, limits) = compute_buckets_limits(hist, self.target_buckets, f64::log2, f64::exp2);
+        let (min, limits) = compute_buckets_limits(hist, self.target_buckets, identity, identity);
 
         buckets_by_limits(hist, *min, limits)
     }
@@ -37,13 +37,13 @@ impl<T: AproxF64 + Ord + Eq + Copy> Bucketer<T> for LogBucketer {
 mod tests {
     use std::collections::BTreeMap;
 
-    use crate::bucketers::{Bucket, Bucketer, log_bucketer::LogBucketer};
+    use crate::bucketers::{Bucket, Bucketer, linear_bucketer::LinearBucketer};
 
     #[test]
     fn test_same_element_goes_to_same_bucket() {
         let mut hist = BTreeMap::new();
         hist.insert(10, 3);
-        let bucketer = LogBucketer::new(100);
+        let bucketer = LinearBucketer::new(100);
 
         let res = bucketer.split(&hist);
 
@@ -59,7 +59,7 @@ mod tests {
         let mut hist = BTreeMap::new();
         hist.insert(10, 3);
         hist.insert(20, 5);
-        let bucketer = LogBucketer::new(100);
+        let bucketer = LinearBucketer::new(100);
 
         let res = bucketer.split(&hist);
 
@@ -74,7 +74,7 @@ mod tests {
         hist.insert(10, 3);
         hist.insert(1000, 2);
         hist.insert(100, 5);
-        let bucketer = LogBucketer::new(100);
+        let bucketer = LinearBucketer::new(100);
 
         let res = bucketer.split(&hist);
 
@@ -90,7 +90,7 @@ mod tests {
         hist.insert(10, 3);
         hist.insert(20, 2);
         hist.insert(100, 7);
-        let bucketer = LogBucketer::new(2);
+        let bucketer = LinearBucketer::new(2);
 
         let res = bucketer.split(&hist);
 
@@ -109,7 +109,7 @@ mod tests {
         hist.insert(10, 3);
         hist.insert(90, 2);
         hist.insert(100, 7);
-        let bucketer = LogBucketer::new(2);
+        let bucketer = LinearBucketer::new(2);
 
         let res = bucketer.split(&hist);
 
@@ -123,26 +123,34 @@ mod tests {
     }
 
     #[test]
-    fn test_items_are_bucketed_logly() {
+    fn test_items_are_bucketed_linearly() {
         let mut hist = BTreeMap::new();
-        (1..=20).for_each(|i| {
+        (1..=10).for_each(|i| {
             hist.insert(i, 1);
         });
-        let bucketer = LogBucketer::new(3);
+        let bucketer = LinearBucketer::new(5);
 
         let res = bucketer.split(&hist);
 
-        assert_eq!(res.len(), 3);
+        assert_eq!(res.len(), 5);
         assert_eq!(res[0].0.min, 1);
         assert_eq!(res[0].0.max, 2);
         assert_eq!(res[0].1, 2);
 
         assert_eq!(res[1].0.min, 3);
-        assert_eq!(res[1].0.max, 7);
-        assert_eq!(res[1].1, 5);
+        assert_eq!(res[1].0.max, 4);
+        assert_eq!(res[1].1, 2);
 
-        assert_eq!(res[2].0.min, 8);
-        assert_eq!(res[2].0.max, 20);
-        assert_eq!(res[2].1, 13);
+        assert_eq!(res[2].0.min, 5);
+        assert_eq!(res[2].0.max, 6);
+        assert_eq!(res[2].1, 2);
+
+        assert_eq!(res[3].0.min, 7);
+        assert_eq!(res[3].0.max, 8);
+        assert_eq!(res[3].1, 2);
+
+        assert_eq!(res[4].0.min, 9);
+        assert_eq!(res[4].0.max, 10);
+        assert_eq!(res[4].1, 2);
     }
 }

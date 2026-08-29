@@ -1,6 +1,6 @@
 use std::{fmt::Display, rc::Rc};
 
-use dhist::bucketers::log_bucketer::AproxF64;
+use dhist::bucketers::AproxF64;
 use nom_exif::URational;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
