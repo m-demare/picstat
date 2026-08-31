@@ -63,13 +63,7 @@ pub(super) fn buckets_by_limits<T: AproxF64 + Ord + Eq + Copy>(
         current_count += count;
     }
 
-    buckets.push((
-        Bucket {
-            min: bucket_start,
-            max: bucket_end,
-        },
-        current_count,
-    ));
+    buckets.push((Bucket::new(bucket_start, bucket_end), current_count));
 
     buckets
 }
