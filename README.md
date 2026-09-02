@@ -7,6 +7,12 @@ shutter speed, ISO, lens)
 ## Preview
 ![Sample screenshot](https://github.com/user-attachments/assets/0cf500b8-f0b5-4805-b6ea-b231ed322580)
 
+## Features
+- Graphics for your most used focal length, aperture, shutter speed, ISO, lens and camera body
+- Custom histogram drawing library
+- Parallelized EXIF metadata parsing, for faster execution
+- 100% artesanal hand-written software
+
 ## Usage
 The tool can be used as `picstat [OPTIONS] [PATH]`
 
