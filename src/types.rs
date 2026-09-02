@@ -1,4 +1,4 @@
-use std::{fmt::Display, rc::Rc};
+use std::{fmt::Display, sync::Arc};
 
 use dhist::bucketers::AproxF64;
 use nom_exif::URational;
@@ -119,7 +119,7 @@ impl FocalLength {
 }
 
 #[derive(Debug, Clone, PartialOrd, Ord)]
-pub struct Lens(Rc<String>);
+pub struct Lens(Arc<String>);
 
 impl Display for Lens {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -129,20 +129,20 @@ impl Display for Lens {
 
 impl PartialEq for Lens {
     fn eq(&self, other: &Self) -> bool {
-        Rc::ptr_eq(&self.0, &other.0)
+        Arc::ptr_eq(&self.0, &other.0)
     }
 }
 
 impl Eq for Lens {}
 
-impl From<Rc<String>> for Lens {
-    fn from(value: Rc<String>) -> Self {
+impl From<Arc<String>> for Lens {
+    fn from(value: Arc<String>) -> Self {
         Self(value)
     }
 }
 
 #[derive(Debug, Clone, PartialOrd, Ord)]
-pub struct Camera(Rc<String>);
+pub struct Camera(Arc<String>);
 
 impl Display for Camera {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -152,14 +152,14 @@ impl Display for Camera {
 
 impl PartialEq for Camera {
     fn eq(&self, other: &Self) -> bool {
-        Rc::ptr_eq(&self.0, &other.0)
+        Arc::ptr_eq(&self.0, &other.0)
     }
 }
 
 impl Eq for Camera {}
 
-impl From<Rc<String>> for Camera {
-    fn from(value: Rc<String>) -> Self {
+impl From<Arc<String>> for Camera {
+    fn from(value: Arc<String>) -> Self {
         Self(value)
     }
 }

@@ -1,6 +1,6 @@
 use std::{io, path::Path};
 
-use nom_exif::{EntryValue, ExifTag, MediaSource};
+use nom_exif::{EntryValue, ExifTag};
 
 use crate::{
     context::Context,
@@ -18,14 +18,12 @@ pub struct FileMetadata {
 }
 
 impl FileMetadata {
-    pub fn from_exif(ctxt: &mut Context, path: &Path) -> Result<Self, io::Error> {
-        let ms = wrap_exif_err(MediaSource::open(path))?;
-        let iter = wrap_exif_err(ctxt.parser.parse_exif(ms))?;
-        let exif = iter.into();
+    pub fn from_exif(ctxt: &Context, path: &Path) -> Result<Self, io::Error> {
+        let exif = wrap_exif_err(nom_exif::read_exif(path))?;
         Ok(Self::parse_exif(&exif, ctxt))
     }
 
-    fn parse_exif(exif: &nom_exif::Exif, ctxt: &mut Context) -> Self {
+    fn parse_exif(exif: &nom_exif::Exif, ctxt: &Context) -> Self {
         let iso = exif
             .get(ExifTag::ISOSpeedRatings)
             .and_then(EntryValue::try_as_integer)

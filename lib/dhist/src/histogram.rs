@@ -6,12 +6,12 @@ use crate::bucketers::{Bucket, Bucketer};
 pub struct Histogram<V: Ord + Eq + Debug + Display> {
     items: BTreeMap<V, usize>,
     unknown: usize,
-    bucketer: Box<dyn Bucketer<V>>,
+    bucketer: Box<dyn Bucketer<V> + Send + Sync>,
     hist_char: char,
 }
 
 impl<V: Ord + Eq + Debug + Display> Histogram<V> {
-    pub fn new(bucketer: Box<dyn Bucketer<V>>, hist_char: char) -> Self {
+    pub fn new(bucketer: Box<dyn Bucketer<V> + Send + Sync>, hist_char: char) -> Self {
         Self {
             items: BTreeMap::default(),
             unknown: 0,

@@ -1,8 +1,10 @@
+use std::sync::atomic::{AtomicU32, Ordering};
+
 use indicatif::ProgressBar;
-use nom_exif::MediaParser;
 
 use crate::{
     cli::CliArgs,
+    progress_bar::build_progress_bar,
     string_interner::StringInterner,
     types::{Aperture, Camera, FocalLength, Lens, ShutterSpeed},
 };
@@ -14,7 +16,6 @@ use dhist::{
 
 pub struct Context {
     pub(crate) string_interner: StringInterner,
-    pub(crate) parser: MediaParser,
 
     pub(crate) iso_hist: Histogram<u32>,
     pub(crate) shutter_speed_hist: Histogram<ShutterSpeed>,
@@ -23,18 +24,17 @@ pub struct Context {
     pub(crate) lens_hist: Histogram<Lens>,
     pub(crate) camera_hist: Histogram<Camera>,
 
-    pub(crate) analysed_files: u32,
-    pub(crate) analysed_dirs: u32,
+    analysed_files: AtomicU32,
+    analysed_dirs: AtomicU32,
 
-    pub(crate) progress_bar: ProgressBar,
-    pub(crate) warnings: Vec<String>,
+    progress_bar: ProgressBar,
+    warnings: Vec<String>,
 }
 
 impl Context {
     pub fn new(args: &CliArgs) -> Self {
         Self {
             string_interner: StringInterner::default(),
-            parser: MediaParser::default(),
 
             iso_hist: Histogram::new(Box::new(LogBucketer::default()), args.hist_char),
             shutter_speed_hist: Histogram::new(Box::new(LogBucketer::default()), args.hist_char),
@@ -43,11 +43,70 @@ impl Context {
             lens_hist: Histogram::new(Box::new(ExactMatchBucketer::default()), args.hist_char),
             camera_hist: Histogram::new(Box::new(ExactMatchBucketer::default()), args.hist_char),
 
-            analysed_files: 0,
-            analysed_dirs: 0,
+            analysed_files: 0.into(),
+            analysed_dirs: 0.into(),
 
             progress_bar: ProgressBar::new(0),
             warnings: Vec::default(),
         }
+    }
+
+    pub fn analysed_files(&self) -> u32 {
+        self.analysed_files.load(Ordering::Relaxed)
+    }
+
+    pub fn analysed_dirs(&self, recursive: bool) -> u32 {
+        if recursive {
+            self.analysed_dirs.load(Ordering::Relaxed)
+        } else {
+            1
+        }
+    }
+
+    pub fn analyse_file(&self) {
+        self.progress_bar.inc(1);
+        self.analysed_files.fetch_add(1, Ordering::Relaxed);
+    }
+
+    pub fn analyse_dir(&self) {
+        self.analysed_dirs.fetch_add(1, Ordering::Relaxed);
+    }
+
+    pub fn initialize_progress_bar(&mut self, args: &CliArgs, total_file_count: usize) {
+        self.progress_bar = build_progress_bar(args, total_file_count);
+    }
+
+    pub fn finish_analysis(&self, args: &CliArgs) {
+        self.progress_bar.finish();
+
+        println!();
+        self.warnings.iter().for_each(|w| println!("{w}"));
+        println!();
+
+        println!(
+            "Analysed {} files in {} directories",
+            self.analysed_files(),
+            self.analysed_dirs(args.recursive)
+        );
+        println!();
+    }
+
+    pub fn print_stats(&self) {
+        println!("Focal length");
+        println!("{}", self.focal_length_hist);
+        println!("Aperture");
+        println!("{}", self.aperture_hist);
+        println!("Shutter speed");
+        println!("{}", self.shutter_speed_hist);
+        println!("ISO");
+        println!("{}", self.iso_hist);
+        println!("Lens");
+        println!("{}", self.lens_hist);
+        println!("Camera body");
+        println!("{}", self.camera_hist);
+    }
+
+    pub fn warn(&mut self, s: String) {
+        self.warnings.push(s);
     }
 }
