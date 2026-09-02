@@ -36,12 +36,12 @@ impl Context {
         Self {
             string_interner: StringInterner::default(),
 
-            iso_hist: Histogram::new(Box::new(LogBucketer::default()), args.hist_char),
-            shutter_speed_hist: Histogram::new(Box::new(LogBucketer::default()), args.hist_char),
-            aperture_hist: Histogram::new(Box::new(LogBucketer::default()), args.hist_char),
-            focal_length_hist: Histogram::new(Box::new(LogBucketer::default()), args.hist_char),
-            lens_hist: Histogram::new(Box::new(ExactMatchBucketer::default()), args.hist_char),
-            camera_hist: Histogram::new(Box::new(ExactMatchBucketer::default()), args.hist_char),
+            iso_hist: Histogram::new(args.hist_char),
+            shutter_speed_hist: Histogram::new(args.hist_char),
+            aperture_hist: Histogram::new(args.hist_char),
+            focal_length_hist: Histogram::new(args.hist_char),
+            lens_hist: Histogram::new(args.hist_char),
+            camera_hist: Histogram::new(args.hist_char),
 
             analysed_files: 0.into(),
             analysed_dirs: 0.into(),
@@ -92,18 +92,21 @@ impl Context {
     }
 
     pub fn print_stats(&self) {
+        let lb = &LogBucketer::default();
+        let eb = &ExactMatchBucketer::default();
+
         println!("Focal length");
-        println!("{}", self.focal_length_hist);
+        println!("{}", self.focal_length_hist.bucket(lb));
         println!("Aperture");
-        println!("{}", self.aperture_hist);
+        println!("{}", self.aperture_hist.bucket(lb));
         println!("Shutter speed");
-        println!("{}", self.shutter_speed_hist);
+        println!("{}", self.shutter_speed_hist.bucket(lb));
         println!("ISO");
-        println!("{}", self.iso_hist);
+        println!("{}", self.iso_hist.bucket(lb));
         println!("Lens");
-        println!("{}", self.lens_hist);
+        println!("{}", self.lens_hist.bucket(eb));
         println!("Camera body");
-        println!("{}", self.camera_hist);
+        println!("{}", self.camera_hist.bucket(eb));
     }
 
     pub fn warn(&mut self, s: String) {
