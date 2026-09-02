@@ -1,4 +1,4 @@
-# dhist
+# cli-hist
 
 A simple library designed to compute and draw histograms.
 

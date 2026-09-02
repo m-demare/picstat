@@ -1,6 +1,6 @@
 use std::{fmt::Display, sync::Arc};
 
-use dhist::bucketers::AproxF64;
+use cli_hist::bucketers::AproxF64;
 use nom_exif::URational;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]

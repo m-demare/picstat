@@ -9,7 +9,7 @@ use crate::{
     types::{Aperture, Camera, FocalLength, Lens, ShutterSpeed},
 };
 
-use dhist::{
+use cli_hist::{
     bucketers::{exact_match_bucketer::ExactMatchBucketer, log_bucketer::LogBucketer},
     histogram::Histogram,
 };
