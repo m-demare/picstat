@@ -2,6 +2,7 @@ use std::{collections::BTreeMap, fmt::Display};
 
 use crate::{bucketed_histogram::BucketedHistogram, bucketers::Bucketer};
 
+/// Struct representing the histogram.
 pub struct Histogram<V: Ord + Eq + Display> {
     items: BTreeMap<V, usize>,
     unknown: usize,
@@ -9,6 +10,7 @@ pub struct Histogram<V: Ord + Eq + Display> {
 }
 
 impl<V: Ord + Eq + Display> Histogram<V> {
+    /// Create a new histogram, using `hist_char` as the character to render the histograms.
     pub fn new(hist_char: char) -> Self {
         Self {
             items: BTreeMap::default(),
@@ -17,10 +19,14 @@ impl<V: Ord + Eq + Display> Histogram<V> {
         }
     }
 
+    /// Insert new data to the histogram.
     pub fn insert(&mut self, v: V) {
         *self.items.entry(v).or_default() += 1;
     }
 
+    /// Insert new data to the histogram.
+    /// If the value is None, it'll be inserted as an "unknown" value, that gets drawn separately
+    /// from the histogram.
     pub fn insert_opt(&mut self, v: Option<V>) {
         match v {
             Some(v) => self.insert(v),
@@ -28,6 +34,20 @@ impl<V: Ord + Eq + Display> Histogram<V> {
         }
     }
 
+    /// Bucket the histogram.
+    /// This method returns a BucketedHistogram, that can be displayed.
+    /// Different Bucketer's can be used, depending on the datatypes and the specific needs.
+    /// E.g.: ExactMatchBucketer, LogBucketer, LinearBucketer
+    /// # Example
+    /// ```
+    /// use cli_hist::histogram::Histogram;
+    /// use cli_hist::bucketers::linear_bucketer::LinearBucketer;
+    /// let mut hist = Histogram::new('█');
+    ///
+    /// hist.insert(1);
+    /// println!("{}", hist.bucket(&LinearBucketer::new(10)));
+    /// // hist gets split into buckets according to LinearBucketer, and displayed
+    /// ```
     pub fn bucket<'a, 'b>(&'a self, bucketer: &'b dyn Bucketer<V>) -> BucketedHistogram<'a, 'b, V> {
         BucketedHistogram::new(self, bucketer)
     }

@@ -5,6 +5,7 @@ use crate::bucketers::{
     aprox_bucketers::{buckets_by_limits, compute_buckets_limits},
 };
 
+/// Bucketer that divides values according to a linear scale.
 pub struct LinearBucketer {
     target_buckets: u8,
 }

@@ -5,6 +5,7 @@ use crate::bucketers::{
     aprox_bucketers::{buckets_by_limits, compute_buckets_limits},
 };
 
+/// Bucketer that divides values according to a log scale.
 pub struct LogBucketer {
     target_buckets: u8,
 }

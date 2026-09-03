@@ -4,6 +4,7 @@ use crate::bucketers::{Bucket, Bucketer};
 
 pub struct ExactMatchBucketer {}
 
+/// Bucketer that divides values just by exact match.
 impl ExactMatchBucketer {
     pub const fn new() -> Self {
         Self {}

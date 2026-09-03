@@ -5,6 +5,8 @@ use crate::{
     histogram::Histogram,
 };
 
+/// Struct representing a histogram that's already been bucketed, ready to display. See
+/// [`crate::histogram::Histogram::bucket`]
 pub struct BucketedHistogram<'a, 'b, V: Ord + Eq + Display> {
     hist: &'a Histogram<V>,
     bucketer: &'b dyn Bucketer<V>,
