@@ -111,7 +111,8 @@ impl FilterValue {
 #[derive(Debug)]
 pub enum FilterError {
     TypeError(&'static str, String),
-    UnknownValue(String),
+    UnknownIdentifier(String),
+    EmptyField(&'static str),
 }
 
 impl std::fmt::Display for FilterError {
@@ -121,7 +122,8 @@ impl std::fmt::Display for FilterError {
             FilterError::TypeError(expected, got) => {
                 write!(f, "Type error: expected {expected} and got {got}")
             }
-            FilterError::UnknownValue(v) => todo!(),
+            FilterError::UnknownIdentifier(id) => write!(f, "Unknown function identifier: {id}"),
+            FilterError::EmptyField(id) => write!(f, "File has empty field {id}"),
         }
     }
 }

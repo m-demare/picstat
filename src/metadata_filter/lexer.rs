@@ -1,10 +1,10 @@
 use std::iter::Peekable;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     Boolean(bool),
     Number(f64),
-    Variable(String),
+    Identifier(String),
     Error,
     Eq,
     Lt,
@@ -18,6 +18,7 @@ pub enum Token {
     Not,
     Lparen,
     Rparen,
+    Comma,
 }
 
 pub struct Lexer<I: Iterator<Item = char>> {
@@ -62,28 +63,7 @@ impl<I: Iterator<Item = char>> Lexer<I> {
         Token::Number(whole + decimal)
     }
 
-    fn read_bool(&mut self) -> Token {
-        match self.peek() {
-            Some('t') => self
-                .consume("true".chars())
-                .map_or(Token::Error, |()| Token::Boolean(true)),
-            Some('f') => self
-                .consume("false".chars())
-                .map_or(Token::Error, |()| Token::Boolean(false)),
-            _ => Token::Error,
-        }
-    }
-
-    fn consume<J: IntoIterator<Item = char>>(&mut self, arg: J) -> Result<(), ()> {
-        if arg.into_iter().all(|ch| Some(ch) == self.next()) {
-            Ok(())
-        } else {
-            Err(())
-        }
-    }
-
-    fn read_variable(&mut self) -> Token {
-        self.next();
+    fn read_identifier(&mut self) -> Token {
         let mut res = String::new();
         while let Some(ch) = self.peek()
             && ch.is_ascii_alphabetic()
@@ -92,10 +72,11 @@ impl<I: Iterator<Item = char>> Lexer<I> {
             res.push(ch);
         }
 
-        if res.is_empty() {
-            Token::Error
-        } else {
-            Token::Variable(res)
+        match res.as_str() {
+            "" => Token::Error,
+            "true" => Token::Boolean(true),
+            "false" => Token::Boolean(false),
+            _ => Token::Identifier(res),
         }
     }
 
@@ -113,6 +94,7 @@ impl<I: Iterator<Item = char>> Lexer<I> {
             '!' => Token::Not,
             '(' => Token::Lparen,
             ')' => Token::Rparen,
+            ',' => Token::Comma,
             _ => Token::Error,
         }
     }
@@ -141,8 +123,7 @@ impl<I: Iterator<Item = char>> Iterator for Lexer<I> {
 
         Some(match self.peek()? {
             '0'..='9' => self.read_number(),
-            'a'..='z' => self.read_bool(),
-            '%' => self.read_variable(),
+            'a'..='z' => self.read_identifier(),
             ch => self.single_char_token(ch),
         })
     }

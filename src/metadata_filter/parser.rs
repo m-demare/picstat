@@ -48,13 +48,24 @@ impl<I: Iterator<Item = char>> Parser<I> {
         match self.next() {
             Some(Token::Boolean(b)) => Ok(MetadataFilter::Boolean(b)),
             Some(Token::Number(n)) => Ok(MetadataFilter::Number(n)),
-            Some(Token::Variable(s)) => Ok(MetadataFilter::Variable(s)),
+            Some(Token::Identifier(s)) => self.fn_call(s),
             Some(Token::Lparen) => self.group_exp(),
             Some(t @ Token::Not) => self.unary(t),
 
             Some(t) => Err(ParseError::UnexpectedToken(t.clone(), self.last_tok_pos)),
             None => Err(ParseError::UnexpectedEOF),
         }
+    }
+
+    fn fn_call(&mut self, ident: String) -> ParseResult {
+        consume!(self; (Token::Lparen));
+        let mut args = Vec::new();
+        while Some(&Token::Comma) == self.peek() {
+            self.next();
+            args.push(self.expression(Precedence::Lowest)?);
+        }
+        consume!(self; (Token::Rparen));
+        return Ok(MetadataFilter::FnCall(ident, args));
     }
 
     fn unary(&mut self, t: Token) -> ParseResult {
