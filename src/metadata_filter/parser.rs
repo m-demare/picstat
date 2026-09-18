@@ -25,7 +25,7 @@ impl<I: Iterator<Item = char>> Parser<I> {
         }
     }
 
-    fn peek(&mut self) -> Option<&Token> {
+    const fn peek(&self) -> Option<&Token> {
         self.peeked_token.as_ref()
     }
 
@@ -52,7 +52,7 @@ impl<I: Iterator<Item = char>> Parser<I> {
             Some(Token::Lparen) => self.group_exp(),
             Some(t @ Token::Not) => self.unary(t),
 
-            Some(t) => Err(ParseError::UnexpectedToken(t.clone(), self.last_tok_pos)),
+            Some(t) => Err(ParseError::UnexpectedToken(t, self.last_tok_pos)),
             None => Err(ParseError::UnexpectedEOF),
         }
     }
@@ -65,7 +65,7 @@ impl<I: Iterator<Item = char>> Parser<I> {
             args.push(self.expression(Precedence::Lowest)?);
         }
         consume!(self; (Token::Rparen));
-        return Ok(MetadataFilter::FnCall(ident, args));
+        Ok(MetadataFilter::FnCall(ident, args))
     }
 
     fn unary(&mut self, t: Token) -> ParseResult {
@@ -97,39 +97,39 @@ impl<I: Iterator<Item = char>> Parser<I> {
             match self.peek() {
                 Some(t @ Token::Eq) => {
                     let new_precedence = validate_precedence!(t);
-                    lhs = self.binary(lhs, MetadataFilter::Eq, new_precedence)?
+                    lhs = self.binary(lhs, MetadataFilter::Eq, new_precedence)?;
                 }
                 Some(t @ Token::Lt) => {
                     let new_precedence = validate_precedence!(t);
-                    lhs = self.binary(lhs, MetadataFilter::Lt, new_precedence)?
+                    lhs = self.binary(lhs, MetadataFilter::Lt, new_precedence)?;
                 }
                 Some(t @ Token::Gt) => {
                     let new_precedence = validate_precedence!(t);
-                    lhs = self.binary(lhs, MetadataFilter::Gt, new_precedence)?
+                    lhs = self.binary(lhs, MetadataFilter::Gt, new_precedence)?;
                 }
                 Some(t @ Token::Minus) => {
                     let new_precedence = validate_precedence!(t);
-                    lhs = self.binary(lhs, MetadataFilter::Minus, new_precedence)?
+                    lhs = self.binary(lhs, MetadataFilter::Minus, new_precedence)?;
                 }
                 Some(t @ Token::Plus) => {
                     let new_precedence = validate_precedence!(t);
-                    lhs = self.binary(lhs, MetadataFilter::Plus, new_precedence)?
+                    lhs = self.binary(lhs, MetadataFilter::Plus, new_precedence)?;
                 }
                 Some(t @ Token::Times) => {
                     let new_precedence = validate_precedence!(t);
-                    lhs = self.binary(lhs, MetadataFilter::Times, new_precedence)?
+                    lhs = self.binary(lhs, MetadataFilter::Times, new_precedence)?;
                 }
                 Some(t @ Token::Div) => {
                     let new_precedence = validate_precedence!(t);
-                    lhs = self.binary(lhs, MetadataFilter::Div, new_precedence)?
+                    lhs = self.binary(lhs, MetadataFilter::Div, new_precedence)?;
                 }
                 Some(t @ Token::And) => {
                     let new_precedence = validate_precedence!(t);
-                    lhs = self.binary(lhs, MetadataFilter::And, new_precedence)?
+                    lhs = self.binary(lhs, MetadataFilter::And, new_precedence)?;
                 }
                 Some(t @ Token::Or) => {
                     let new_precedence = validate_precedence!(t);
-                    lhs = self.binary(lhs, MetadataFilter::Or, new_precedence)?
+                    lhs = self.binary(lhs, MetadataFilter::Or, new_precedence)?;
                 }
 
                 Some(_) | None => break Ok(lhs),
@@ -158,11 +158,11 @@ impl std::fmt::Display for ParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Encountered error when parsing filter: ")?;
         match self {
-            ParseError::UnexpectedEOF => write!(f, "Unexpected end of expression"),
-            ParseError::UnexpectedToken(Token::Error, offset) => {
+            Self::UnexpectedEOF => write!(f, "Unexpected end of expression"),
+            Self::UnexpectedToken(Token::Error, offset) => {
                 write!(f, "Invalid token at offset {offset}")
             }
-            ParseError::UnexpectedToken(t, offset) => {
+            Self::UnexpectedToken(t, offset) => {
                 write!(f, "Unexpected token {t:?} at offset {offset}")
             }
         }

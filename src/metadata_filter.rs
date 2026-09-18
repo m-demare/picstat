@@ -14,23 +14,23 @@ mod lexer;
 mod native_functions;
 mod parser;
 mod utils;
-pub(crate) mod value;
+pub mod value;
 
 #[derive(Clone, Debug)]
 pub enum MetadataFilter {
     Boolean(bool),
     Number(f64),
-    Not(Box<MetadataFilter>),
-    Eq(Box<MetadataFilter>, Box<MetadataFilter>),
-    Lt(Box<MetadataFilter>, Box<MetadataFilter>),
-    Gt(Box<MetadataFilter>, Box<MetadataFilter>),
-    Minus(Box<MetadataFilter>, Box<MetadataFilter>),
-    Plus(Box<MetadataFilter>, Box<MetadataFilter>),
-    Times(Box<MetadataFilter>, Box<MetadataFilter>),
-    Div(Box<MetadataFilter>, Box<MetadataFilter>),
-    And(Box<MetadataFilter>, Box<MetadataFilter>),
-    Or(Box<MetadataFilter>, Box<MetadataFilter>),
-    FnCall(String, Vec<MetadataFilter>),
+    Not(Box<Self>),
+    Eq(Box<Self>, Box<Self>),
+    Lt(Box<Self>, Box<Self>),
+    Gt(Box<Self>, Box<Self>),
+    Minus(Box<Self>, Box<Self>),
+    Plus(Box<Self>, Box<Self>),
+    Times(Box<Self>, Box<Self>),
+    Div(Box<Self>, Box<Self>),
+    And(Box<Self>, Box<Self>),
+    Or(Box<Self>, Box<Self>),
+    FnCall(String, Vec<Self>),
 }
 
 impl MetadataFilter {
@@ -52,39 +52,33 @@ impl MetadataFilter {
             };
         }
         match self {
-            MetadataFilter::Boolean(b) => Ok(FilterValue::Boolean(*b)),
-            MetadataFilter::Number(n) => Ok(FilterValue::Number(*n)),
-            MetadataFilter::Not(a) => a.eval(metadata)?.not(),
-            MetadataFilter::Eq(a, b) => comparison!(a, b, eq),
-            MetadataFilter::Lt(a, b) => comparison!(a, b, lt),
-            MetadataFilter::Gt(a, b) => comparison!(a, b, gt),
-            MetadataFilter::Minus(a, b) => arithm!(a, b, minus),
-            MetadataFilter::Plus(a, b) => arithm!(a, b, plus),
-            MetadataFilter::Times(a, b) => arithm!(a, b, times),
-            MetadataFilter::Div(a, b) => arithm!(a, b, div),
-            MetadataFilter::And(a, b) => {
-                self.bool_op(a.eval(metadata)?, b.eval(metadata)?, |a, b| a && b)
-            }
-            MetadataFilter::Or(a, b) => {
-                self.bool_op(a.eval(metadata)?, b.eval(metadata)?, |a, b| a || b)
-            }
-            MetadataFilter::FnCall(ident, args) => self.fn_call(ident, args, metadata),
+            Self::Boolean(b) => Ok(FilterValue::Boolean(*b)),
+            Self::Number(n) => Ok(FilterValue::Number(*n)),
+            Self::Not(a) => a.eval(metadata)?.not(),
+            Self::Eq(a, b) => comparison!(a, b, eq),
+            Self::Lt(a, b) => comparison!(a, b, lt),
+            Self::Gt(a, b) => comparison!(a, b, gt),
+            Self::Minus(a, b) => arithm!(a, b, minus),
+            Self::Plus(a, b) => arithm!(a, b, plus),
+            Self::Times(a, b) => arithm!(a, b, times),
+            Self::Div(a, b) => arithm!(a, b, div),
+            Self::And(a, b) => Self::bool_op(&a.eval(metadata)?, &b.eval(metadata)?, |a, b| a && b),
+            Self::Or(a, b) => Self::bool_op(&a.eval(metadata)?, &b.eval(metadata)?, |a, b| a || b),
+            Self::FnCall(ident, args) => Self::fn_call(ident, args, metadata),
         }
     }
 
     fn bool_op(
-        &self,
-        a: FilterValue,
-        b: FilterValue,
+        a: &FilterValue,
+        b: &FilterValue,
         f: impl Fn(bool, bool) -> bool,
     ) -> Result<FilterValue, FilterError> {
         Ok(FilterValue::Boolean(f(a.as_bool()?, b.as_bool()?)))
     }
 
     fn fn_call(
-        &self,
         ident: &str,
-        args: &[MetadataFilter],
+        args: &[Self],
         metadata: &FileMetadata,
     ) -> Result<FilterValue, FilterError> {
         let func =

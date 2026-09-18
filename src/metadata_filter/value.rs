@@ -7,31 +7,24 @@ pub(super) enum FilterValue {
 impl FilterValue {
     pub fn as_bool(&self) -> Result<bool, FilterError> {
         match self {
-            FilterValue::Boolean(b) => Ok(*b),
-            FilterValue::Number(n) => Ok(!Self::eq_f64(*n, 0.0)),
+            Self::Boolean(b) => Ok(*b),
+            Self::Number(n) => Ok(!Self::eq_f64(*n, 0.0)),
         }
     }
 
-    pub fn as_number(&self) -> Result<f64, FilterError> {
-        match self {
-            FilterValue::Number(n) => Ok(*n),
-            v => Err(FilterError::TypeError("number", v.get_type_str())),
-        }
-    }
-
-    pub fn not(&self) -> Result<FilterValue, FilterError> {
-        Ok(FilterValue::Boolean(!self.as_bool()?))
+    pub fn not(&self) -> Result<Self, FilterError> {
+        Ok(Self::Boolean(!self.as_bool()?))
     }
 
     pub fn eq_f64(a: f64, b: f64) -> bool {
-        const TOLERANCE: f64 = 0.000001;
+        const TOLERANCE: f64 = 0.000_001;
         (a - b).abs() < TOLERANCE
     }
 
-    pub fn eq(&self, other: &FilterValue) -> Result<bool, FilterError> {
+    pub fn eq(&self, other: &Self) -> Result<bool, FilterError> {
         match (self, other) {
-            (FilterValue::Boolean(a), FilterValue::Boolean(b)) => Ok(a == b),
-            (FilterValue::Number(a), FilterValue::Number(b)) => Ok(Self::eq_f64(*a, *b)),
+            (Self::Boolean(a), Self::Boolean(b)) => Ok(a == b),
+            (Self::Number(a), Self::Number(b)) => Ok(Self::eq_f64(*a, *b)),
             (a, b) => Err(FilterError::TypeError(
                 "matching types",
                 format!("{} and {}", a.get_type_str(), b.get_type_str()),
@@ -39,9 +32,9 @@ impl FilterValue {
         }
     }
 
-    pub fn lt(&self, other: &FilterValue) -> Result<bool, FilterError> {
+    pub fn lt(&self, other: &Self) -> Result<bool, FilterError> {
         match (self, other) {
-            (FilterValue::Number(a), FilterValue::Number(b)) => Ok(a < b),
+            (Self::Number(a), Self::Number(b)) => Ok(a < b),
             (a, b) => Err(FilterError::TypeError(
                 "numbers",
                 format!("{} and {}", a.get_type_str(), b.get_type_str()),
@@ -49,9 +42,9 @@ impl FilterValue {
         }
     }
 
-    pub fn gt(&self, other: &FilterValue) -> Result<bool, FilterError> {
+    pub fn gt(&self, other: &Self) -> Result<bool, FilterError> {
         match (self, other) {
-            (FilterValue::Number(a), FilterValue::Number(b)) => Ok(a > b),
+            (Self::Number(a), Self::Number(b)) => Ok(a > b),
             (a, b) => Err(FilterError::TypeError(
                 "numbers",
                 format!("{} and {}", a.get_type_str(), b.get_type_str()),
@@ -59,9 +52,9 @@ impl FilterValue {
         }
     }
 
-    pub fn minus(&self, other: &FilterValue) -> Result<FilterValue, FilterError> {
+    pub fn minus(&self, other: &Self) -> Result<Self, FilterError> {
         match (self, other) {
-            (FilterValue::Number(a), FilterValue::Number(b)) => Ok(FilterValue::Number(a - b)),
+            (Self::Number(a), Self::Number(b)) => Ok(Self::Number(a - b)),
             (a, b) => Err(FilterError::TypeError(
                 "numbers",
                 format!("{} and {}", a.get_type_str(), b.get_type_str()),
@@ -69,9 +62,9 @@ impl FilterValue {
         }
     }
 
-    pub fn plus(&self, other: &FilterValue) -> Result<FilterValue, FilterError> {
+    pub fn plus(&self, other: &Self) -> Result<Self, FilterError> {
         match (self, other) {
-            (FilterValue::Number(a), FilterValue::Number(b)) => Ok(FilterValue::Number(a + b)),
+            (Self::Number(a), Self::Number(b)) => Ok(Self::Number(a + b)),
             (a, b) => Err(FilterError::TypeError(
                 "numbers",
                 format!("{} and {}", a.get_type_str(), b.get_type_str()),
@@ -79,9 +72,9 @@ impl FilterValue {
         }
     }
 
-    pub fn times(&self, other: &FilterValue) -> Result<FilterValue, FilterError> {
+    pub fn times(&self, other: &Self) -> Result<Self, FilterError> {
         match (self, other) {
-            (FilterValue::Number(a), FilterValue::Number(b)) => Ok(FilterValue::Number(a * b)),
+            (Self::Number(a), Self::Number(b)) => Ok(Self::Number(a * b)),
             (a, b) => Err(FilterError::TypeError(
                 "numbers",
                 format!("{} and {}", a.get_type_str(), b.get_type_str()),
@@ -89,9 +82,9 @@ impl FilterValue {
         }
     }
 
-    pub fn div(&self, other: &FilterValue) -> Result<FilterValue, FilterError> {
+    pub fn div(&self, other: &Self) -> Result<Self, FilterError> {
         match (self, other) {
-            (FilterValue::Number(a), FilterValue::Number(b)) => Ok(FilterValue::Number(a / b)),
+            (Self::Number(a), Self::Number(b)) => Ok(Self::Number(a / b)),
             (a, b) => Err(FilterError::TypeError(
                 "numbers",
                 format!("{} and {}", a.get_type_str(), b.get_type_str()),
@@ -101,8 +94,8 @@ impl FilterValue {
 
     fn get_type_str(&self) -> String {
         match self {
-            FilterValue::Boolean(_) => "Boolean",
-            FilterValue::Number(_) => "Number",
+            Self::Boolean(_) => "Boolean",
+            Self::Number(_) => "Number",
         }
         .to_owned()
     }
@@ -119,11 +112,11 @@ impl std::fmt::Display for FilterError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Error applying file filter: ")?;
         match self {
-            FilterError::TypeError(expected, got) => {
+            Self::TypeError(expected, got) => {
                 write!(f, "Type error: expected {expected} and got {got}")
             }
-            FilterError::UnknownIdentifier(id) => write!(f, "Unknown function identifier: {id}"),
-            FilterError::EmptyField(id) => write!(f, "File has empty field {id}"),
+            Self::UnknownIdentifier(id) => write!(f, "Unknown function identifier: {id}"),
+            Self::EmptyField(id) => write!(f, "File has empty field {id}"),
         }
     }
 }

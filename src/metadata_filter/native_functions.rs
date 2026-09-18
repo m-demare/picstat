@@ -5,6 +5,8 @@ use crate::{
     metadata_filter::{FilterValue, value::FilterError},
 };
 
+type NativeFn = fn(&FileMetadata, Vec<FilterValue>) -> Result<FilterValue, FilterError>;
+
 fn aperture(metadata: &FileMetadata, args: Vec<FilterValue>) -> Result<FilterValue, FilterError> {
     let aperture = metadata.aperture().map_or_else(
         || args.into_iter().next(),
@@ -13,9 +15,7 @@ fn aperture(metadata: &FileMetadata, args: Vec<FilterValue>) -> Result<FilterVal
     aperture.ok_or(FilterError::EmptyField("aperture"))
 }
 
-pub fn lookup_fn(
-    ident: &str,
-) -> Option<fn(&FileMetadata, Vec<FilterValue>) -> Result<FilterValue, FilterError>> {
+pub fn lookup_fn(ident: &str) -> Option<NativeFn> {
     match ident {
         "aperture" => Some(aperture),
         _ => None,

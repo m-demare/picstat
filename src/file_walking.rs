@@ -48,7 +48,7 @@ fn walk<I: Iterator<Item = Result<walkdir::DirEntry, walkdir::Error>>>(
                         Ok(ParsedMetadata::Metadata(m)) => match args.filter.accepts(&m) {
                             Ok(true) => Ok(ParsedMetadata::Metadata(m)),
                             Ok(false) => Ok(ParsedMetadata::Silent),
-                            Err(e) => Err(std::io::Error::new(std::io::ErrorKind::Other, e)),
+                            Err(e) => Err(std::io::Error::other(e)),
                         },
                         e => e,
                     }

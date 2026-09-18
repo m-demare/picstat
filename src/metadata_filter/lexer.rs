@@ -56,7 +56,7 @@ impl<I: Iterator<Item = char>> Lexer<I> {
             {
                 self.next();
                 decimal_multiplier /= 10.0;
-                decimal += f64::from(n) * decimal_multiplier;
+                decimal = f64::mul_add(f64::from(n), decimal_multiplier, decimal);
             }
         }
 
@@ -80,7 +80,7 @@ impl<I: Iterator<Item = char>> Lexer<I> {
         }
     }
 
-    const fn single_char_token(&self, ch: char) -> Token {
+    const fn single_char_token(ch: char) -> Token {
         match ch {
             '=' => Token::Eq,
             '<' => Token::Lt,
@@ -99,7 +99,7 @@ impl<I: Iterator<Item = char>> Lexer<I> {
         }
     }
 
-    pub fn curr_pos(&self) -> usize {
+    pub const fn curr_pos(&self) -> usize {
         self.pos
     }
 }
@@ -124,7 +124,7 @@ impl<I: Iterator<Item = char>> Iterator for Lexer<I> {
         Some(match self.peek()? {
             '0'..='9' => self.read_number(),
             'a'..='z' => self.read_identifier(),
-            ch => self.single_char_token(ch),
+            ch => Self::single_char_token(ch),
         })
     }
 }
