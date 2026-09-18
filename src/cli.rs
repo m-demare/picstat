@@ -2,6 +2,8 @@ use std::path::{Path, PathBuf};
 
 use clap::Parser;
 
+use crate::metadata_filter::MetadataFilter;
+
 /// Get stats on your camera settings
 #[derive(Debug, Parser)]
 #[command(author, version, about, long_about = None)]
@@ -29,6 +31,9 @@ pub struct CliArgs {
     /// Character to be used for the histograms
     #[arg(long, default_value_t = '█')]
     pub(super) hist_char: char,
+
+    #[arg(short, long, default_value = "true")]
+    pub(super) filter: MetadataFilter,
 }
 
 impl CliArgs {

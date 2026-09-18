@@ -15,6 +15,7 @@ mod context;
 mod file_metadata;
 mod file_process;
 mod file_walking;
+mod metadata_filter;
 mod progress_bar;
 mod string_interner;
 mod types;

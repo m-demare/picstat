@@ -43,7 +43,15 @@ fn walk<I: Iterator<Item = Result<walkdir::DirEntry, walkdir::Error>>>(
             .map(|f| {
                 if f.file_type().is_file() {
                     ctxt.analyse_file();
-                    parse_metadata(f.path(), args, ctxt)
+                    let res = parse_metadata(f.path(), args, ctxt);
+                    match res {
+                        Ok(ParsedMetadata::Metadata(m)) => match args.filter.accepts(&m) {
+                            Ok(true) => Ok(ParsedMetadata::Metadata(m)),
+                            Ok(false) => Ok(ParsedMetadata::Silent),
+                            Err(e) => Err(std::io::Error::new(std::io::ErrorKind::Other, e)),
+                        },
+                        e => e,
+                    }
                 } else if f.file_type().is_dir() {
                     ctxt.analyse_dir();
                     Ok(ParsedMetadata::Silent)
