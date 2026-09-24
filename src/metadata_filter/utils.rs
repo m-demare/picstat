@@ -13,7 +13,9 @@ pub(super) fn precedence_of_binary(op: &Token) -> Precedence {
     match op {
         Token::Or => Precedence::Or,
         Token::And => Precedence::And,
-        Token::Eq | Token::Lt | Token::Gt => Precedence::Comparator,
+        Token::Eq | Token::NotEq | Token::Lt | Token::Gt | Token::Le | Token::Ge => {
+            Precedence::Comparator
+        }
         Token::Plus | Token::Minus => Precedence::Sum,
         Token::Times | Token::Div => Precedence::Product,
         _ => unreachable!("Invalid binary"),

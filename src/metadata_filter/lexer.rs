@@ -5,10 +5,14 @@ pub enum Token {
     Boolean(bool),
     Number(f64),
     Identifier(String),
+    String(String),
     Error,
     Eq,
+    NotEq,
     Lt,
     Gt,
+    Le,
+    Ge,
     Minus,
     Plus,
     Times,
@@ -80,6 +84,41 @@ impl<I: Iterator<Item = char>> Lexer<I> {
         }
     }
 
+    fn read_string(&mut self) -> Token {
+        let mut res = String::new();
+        self.next();
+        while let Some(ch) = self.peek()
+            && ch != '"'
+        {
+            self.next();
+            res.push(ch);
+        }
+
+        match self.next() {
+            Some('"') => Token::String(res),
+            Some(_) => unreachable!("Error parsing string"),
+            None => Token::Error,
+        }
+    }
+
+    fn read_comparator(&mut self, ch: char) -> Token {
+        self.next();
+        let eq = self.peek() == Some('=');
+
+        match (ch, eq) {
+            ('<', false) => Token::Lt,
+            ('<', true) => Token::Le,
+            ('>', false) => Token::Gt,
+            ('>', true) => Token::Ge,
+
+            ('!', false) => Token::Not,
+            ('!', true) => Token::NotEq,
+            ('=', true) => Token::Eq,
+
+            _ => Token::Error,
+        }
+    }
+
     const fn single_char_token(ch: char) -> Token {
         match ch {
             '=' => Token::Eq,
@@ -124,7 +163,12 @@ impl<I: Iterator<Item = char>> Iterator for Lexer<I> {
         Some(match self.peek()? {
             '0'..='9' => self.read_number(),
             'a'..='z' => self.read_identifier(),
-            ch => Self::single_char_token(ch),
+            '"' => self.read_string(),
+            ch @ ('<' | '>' | '!' | '=') => self.read_comparator(ch),
+            ch => {
+                self.next();
+                Self::single_char_token(ch)
+            }
         })
     }
 }

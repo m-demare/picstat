@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::{error::Error, sync::Arc};
 
 use crate::metadata_filter::{
     MetadataFilter,
@@ -48,6 +48,7 @@ impl<I: Iterator<Item = char>> Parser<I> {
         match self.next() {
             Some(Token::Boolean(b)) => Ok(MetadataFilter::Boolean(b)),
             Some(Token::Number(n)) => Ok(MetadataFilter::Number(n)),
+            Some(Token::String(s)) => Ok(MetadataFilter::String(Arc::new(s))),
             Some(Token::Identifier(s)) => self.fn_call(s),
             Some(Token::Lparen) => self.group_exp(),
             Some(t @ Token::Not) => self.unary(t),
@@ -99,6 +100,10 @@ impl<I: Iterator<Item = char>> Parser<I> {
                     let new_precedence = validate_precedence!(t);
                     lhs = self.binary(lhs, MetadataFilter::Eq, new_precedence)?;
                 }
+                Some(t @ Token::NotEq) => {
+                    let new_precedence = validate_precedence!(t);
+                    lhs = self.binary(lhs, MetadataFilter::NotEq, new_precedence)?;
+                }
                 Some(t @ Token::Lt) => {
                     let new_precedence = validate_precedence!(t);
                     lhs = self.binary(lhs, MetadataFilter::Lt, new_precedence)?;
@@ -106,6 +111,14 @@ impl<I: Iterator<Item = char>> Parser<I> {
                 Some(t @ Token::Gt) => {
                     let new_precedence = validate_precedence!(t);
                     lhs = self.binary(lhs, MetadataFilter::Gt, new_precedence)?;
+                }
+                Some(t @ Token::Le) => {
+                    let new_precedence = validate_precedence!(t);
+                    lhs = self.binary(lhs, MetadataFilter::Le, new_precedence)?;
+                }
+                Some(t @ Token::Ge) => {
+                    let new_precedence = validate_precedence!(t);
+                    lhs = self.binary(lhs, MetadataFilter::Ge, new_precedence)?;
                 }
                 Some(t @ Token::Minus) => {
                     let new_precedence = validate_precedence!(t);

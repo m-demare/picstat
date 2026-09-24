@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{str::FromStr, sync::Arc};
 
 use crate::{
     file_metadata::FileMetadata,
@@ -20,10 +20,14 @@ pub mod value;
 pub enum MetadataFilter {
     Boolean(bool),
     Number(f64),
+    String(Arc<String>),
     Not(Box<Self>),
     Eq(Box<Self>, Box<Self>),
+    NotEq(Box<Self>, Box<Self>),
     Lt(Box<Self>, Box<Self>),
     Gt(Box<Self>, Box<Self>),
+    Le(Box<Self>, Box<Self>),
+    Ge(Box<Self>, Box<Self>),
     Minus(Box<Self>, Box<Self>),
     Plus(Box<Self>, Box<Self>),
     Times(Box<Self>, Box<Self>),
@@ -54,10 +58,14 @@ impl MetadataFilter {
         match self {
             Self::Boolean(b) => Ok(FilterValue::Boolean(*b)),
             Self::Number(n) => Ok(FilterValue::Number(*n)),
+            Self::String(s) => Ok(FilterValue::String(s.clone())),
             Self::Not(a) => a.eval(metadata)?.not(),
             Self::Eq(a, b) => comparison!(a, b, eq),
+            Self::NotEq(a, b) => comparison!(a, b, neq),
             Self::Lt(a, b) => comparison!(a, b, lt),
             Self::Gt(a, b) => comparison!(a, b, gt),
+            Self::Le(a, b) => comparison!(a, b, le),
+            Self::Ge(a, b) => comparison!(a, b, ge),
             Self::Minus(a, b) => arithm!(a, b, minus),
             Self::Plus(a, b) => arithm!(a, b, plus),
             Self::Times(a, b) => arithm!(a, b, times),

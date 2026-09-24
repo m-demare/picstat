@@ -16,6 +16,7 @@ nom-exif = "3.6.2"
 walkdir = "2.5.0"
 cli-hist = { path = "./lib/cli-hist" }
 rayon = "1.12.0"
+jiff = "0.2.37"
 
 [profile.release]
 opt-level = 3
