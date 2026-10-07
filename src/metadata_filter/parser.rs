@@ -61,6 +61,9 @@ impl<I: Iterator<Item = char>> Parser<I> {
     fn fn_call(&mut self, ident: String) -> ParseResult {
         consume!(self; (Token::Lparen));
         let mut args = Vec::new();
+        if self.peek() != Some(&Token::Rparen) {
+            args.push(self.expression(Precedence::Lowest)?);
+        }
         while Some(&Token::Comma) == self.peek() {
             self.next();
             args.push(self.expression(Precedence::Lowest)?);

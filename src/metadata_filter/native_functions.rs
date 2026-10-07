@@ -1,6 +1,6 @@
 #![allow(clippy::needless_pass_by_value)]
 
-use chrono::{Local, NaiveDateTime};
+use chrono::{Local, NaiveDate, NaiveDateTime, NaiveTime, Timelike};
 use cli_hist::bucketers::AproxF64;
 
 use crate::{
@@ -34,7 +34,10 @@ fn instant(_metadata: &FileMetadata, args: Vec<FilterValue>) -> Result<FilterVal
             || Ok(Local::now().naive_local()),
             |ts| {
                 let ts = ts.as_string().unwrap_or("");
-                NaiveDateTime::parse_from_str(ts, "%Y-%m-%d")
+                NaiveDateTime::parse_from_str(ts, "%Y-%m-%d %H:%M:%S").or_else(|_| {
+                    NaiveDate::parse_from_str(ts, "%Y-%m-%d")
+                        .map(|nd| nd.and_time(NaiveTime::default()))
+                })
             },
         )
         .map(FilterValue::Instant)
