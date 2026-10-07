@@ -70,7 +70,7 @@ impl<I: Iterator<Item = char>> Lexer<I> {
     fn read_identifier(&mut self) -> Token {
         let mut res = String::new();
         while let Some(ch) = self.peek()
-            && ch.is_ascii_alphabetic()
+            && (ch.is_ascii_alphabetic() || ch == '_') 
         {
             self.next();
             res.push(ch);
@@ -124,7 +124,6 @@ impl<I: Iterator<Item = char>> Lexer<I> {
 
     const fn single_char_token(ch: char) -> Token {
         match ch {
-            '=' => Token::Eq,
             '<' => Token::Lt,
             '>' => Token::Gt,
             '-' => Token::Minus,
@@ -174,4 +173,45 @@ impl<I: Iterator<Item = char>> Iterator for Lexer<I> {
             }
         })
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Lexer, Token as T};
+
+    macro_rules! test_lex {
+        ($id: ident, $input: expr, $expected_output: expr) => {
+            #[test]
+            fn $id() {
+                let tokens = Lexer::from($input.chars()).collect::<Vec<_>>();
+                assert_eq!(tokens, $expected_output)
+            }
+        };
+    }
+
+    test_lex!(test_lex_bool_true, "true", vec![T::Boolean(true)]);
+    test_lex!(test_lex_bool_false, "false", vec![T::Boolean(false)]);
+
+    test_lex!(test_lex_single_digit_number, "9", vec![T::Number(9.0)]);
+    test_lex!(test_lex_multi_digit_number, "982", vec![T::Number(982.0)]);
+    test_lex!(test_lex_decimal_number, "15.23", vec![T::Number(15.23)]);
+
+    test_lex!(
+        test_lex_identifier,
+        "hi_world",
+        vec![T::Identifier("hi_world".to_owned())]
+    );
+
+    test_lex!(test_lex_string, "\"hi\"", vec![T::String("hi".to_owned())]);
+    test_lex!(
+        test_empty_lex_string,
+        "\"\"",
+        vec![T::String(String::new())]
+    );
+
+    test_lex!(
+        test_lex_comparators,
+        "< <= > >= == !=",
+        vec![T::Lt, T::Le, T::Gt, T::Ge, T::Eq, T::NotEq]
+    );
 }
