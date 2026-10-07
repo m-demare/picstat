@@ -11,6 +11,8 @@ shutter speed, ISO, lens)
 - Graphics for your most used focal length, aperture, shutter speed, ISO, lens and camera body
 - Custom histogram drawing library
 - Parallelized EXIF metadata parsing, for faster execution
+- Easily filter analysed files by their metadata with `--filter`. Supports a small DSL,
+allowing to filter by date, gear, settings value, or a combination of those.
 - 100% artesanal hand-written software
 
 ## Usage
@@ -26,6 +28,12 @@ Options:
   -s, --stop-on-error            Stop if it fails to analyse a file
   -w, --suppress-warnings        Don't output warnings for parsing failures
       --hist-char <HIST_CHAR>    Character to be used for the histograms [default: █]
+  -f, --filter <FILTER>          Filter to apply to the files. Include the photo metadata in the histograms if it returns true.
+                                 Example:
+                                 --filter='photo_datetime() < instant("2026-08-01") & iso() > 640'
+                                 support basic comparison and arithmetics (+ - * / < <= == != etc)
+                                 decimal numbers, booleans, and strings
+                                 Full list of callable functions at src/metadata_filter/native_functions.rs [default: true]
   -h, --help                     Print help
   -V, --version                  Print version
 ```

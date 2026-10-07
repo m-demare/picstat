@@ -32,7 +32,13 @@ pub struct CliArgs {
     #[arg(long, default_value_t = '█')]
     pub(super) hist_char: char,
 
-    #[arg(short, long, default_value = "true")]
+    /// Filter to apply to the files. Include the photo metadata in the histograms if it returns true.
+    /// Example:
+    /// --filter='photo_datetime() < instant("2026-08-01") & iso() > 640'
+    /// support basic comparison and arithmetics (+ - * / < <= == != etc)
+    /// decimal numbers, booleans, and strings
+    /// Full list of callable functions at src/metadata_filter/native_functions.rs
+    #[arg(short, long, default_value = "true", verbatim_doc_comment)]
     pub(super) filter: MetadataFilter,
 }
 
