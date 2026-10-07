@@ -70,7 +70,7 @@ impl<I: Iterator<Item = char>> Lexer<I> {
     fn read_identifier(&mut self) -> Token {
         let mut res = String::new();
         while let Some(ch) = self.peek()
-            && (ch.is_ascii_alphabetic() || ch == '_') 
+            && (ch.is_ascii_alphabetic() || ch == '_')
         {
             self.next();
             res.push(ch);

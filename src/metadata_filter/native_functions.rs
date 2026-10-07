@@ -1,6 +1,6 @@
 #![allow(clippy::needless_pass_by_value)]
 
-use chrono::{Local, NaiveDate, NaiveDateTime, NaiveTime, Timelike};
+use chrono::{Local, NaiveDate, NaiveDateTime, NaiveTime};
 use cli_hist::bucketers::AproxF64;
 
 use crate::{
