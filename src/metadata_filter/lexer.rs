@@ -104,6 +104,9 @@ impl<I: Iterator<Item = char>> Lexer<I> {
     fn read_comparator(&mut self, ch: char) -> Token {
         self.next();
         let eq = self.peek() == Some('=');
+        if eq {
+            self.next();
+        }
 
         match (ch, eq) {
             ('<', false) => Token::Lt,

@@ -4,7 +4,7 @@ pub(super) enum FilterValue {
     Boolean(bool),
     Number(f64),
     String(Arc<String>),
-    Instant(jiff::Timestamp),
+    Instant(chrono::NaiveDateTime),
 }
 impl FilterValue {
     pub fn as_bool(&self) -> Result<bool, FilterError> {
@@ -120,7 +120,7 @@ pub enum FilterError {
     TypeError(&'static str, String),
     UnknownIdentifier(String),
     EmptyField(&'static str),
-    DateError(jiff::Error),
+    DateError(chrono::ParseError),
 }
 
 impl std::fmt::Display for FilterError {

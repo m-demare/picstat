@@ -141,6 +141,12 @@ impl From<Arc<String>> for Lens {
     }
 }
 
+impl From<Lens> for Arc<String> {
+    fn from(value: Lens) -> Self {
+        value.0
+    }
+}
+
 #[derive(Debug, Clone, PartialOrd, Ord)]
 pub struct Camera(Arc<String>);
 
@@ -161,6 +167,12 @@ impl Eq for Camera {}
 impl From<Arc<String>> for Camera {
     fn from(value: Arc<String>) -> Self {
         Self(value)
+    }
+}
+
+impl From<Camera> for Arc<String> {
+    fn from(value: Camera) -> Self {
+        value.0
     }
 }
 

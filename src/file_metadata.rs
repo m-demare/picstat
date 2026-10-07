@@ -15,6 +15,7 @@ pub struct FileMetadata {
     focal_length: Option<FocalLength>,
     lens: Option<Lens>,
     camera: Option<Camera>,
+    datetime: Option<nom_exif::ExifDateTime>,
 }
 
 impl FileMetadata {
@@ -48,6 +49,9 @@ impl FileMetadata {
             .get(ExifTag::Model)
             .and_then(EntryValue::as_str)
             .map(|v| Camera::from(ctxt.string_interner.insert_or_get(v)));
+        let datetime = exif
+            .get(ExifTag::DateTimeOriginal)
+            .and_then(EntryValue::as_datetime);
 
         Self {
             iso,
@@ -56,6 +60,7 @@ impl FileMetadata {
             focal_length,
             lens,
             camera,
+            datetime,
         }
     }
 
@@ -81,6 +86,10 @@ impl FileMetadata {
 
     pub const fn camera(&self) -> Option<&Camera> {
         self.camera.as_ref()
+    }
+
+    pub const fn datetime(&self) -> Option<&nom_exif::ExifDateTime> {
+        self.datetime.as_ref()
     }
 }
 
